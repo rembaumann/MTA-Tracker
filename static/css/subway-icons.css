@@ -1,0 +1,76 @@
+/* NYC Core Framework Subway Icons */
+
+.subway-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+/* MTA Colors */
+.mta-red {
+  background-color: #EE352E;
+}
+
+.mta-green {
+  background-color: #00933C;
+}
+
+.mta-blue {
+  background-color: #0039A6;
+}
+
+.mta-orange {
+  background-color: #FF6319;
+}
+
+.mta-purple {
+  background-color: #B933AD;
+}
+
+.mta-green-2 {
+  background-color: #6CBE45;
+}
+
+.mta-yellow {
+  background-color: #FCCC0A;
+  color: #000; /* Black text for yellow background */
+}
+
+.mta-gray {
+  background-color: #A7A9AC;
+}
+
+.mta-brown {
+  background-color: #996633;
+}
+
+/* Express service indicator */
+.express {
+  border: 2px solid #000;
+}
+
+/* Larger sizes for main display */
+.subway-icon.large {
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+  font-size: 24px;
+  margin: 0 8px;
+}
+
+.subway-icon.medium {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  font-size: 18px;
+  margin: 0 4px;
+}
+

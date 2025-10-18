@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTA Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/subway-icons.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>MTA Tracker</h1>
+                <div class="last-updated">
+                    Last updated: <span id="last-updated">--:--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading train data...</p>
+            </div>
+
+            <div id="content" class="content" style="display: none;">
+                <button id="prev-page" class="nav-button nav-button-left" onclick="previousPage()">‹</button>
+                
+                <div class="main-content">
+                    <div class="station-info">
+                        <div class="station-header">
+                            <h2 id="station-name">Station Name</h2>
+                            <span id="direction" class="direction">Direction</span>
+                        </div>
+                        <div class="direction-info">
+                            <span id="line-type" class="line-type">Line Type</span>
+                        </div>
+                    </div>
+
+                    <div class="trains-container">
+                        <div id="trains-list" class="trains-list">
+                            <!-- Trains will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="next-page" class="nav-button nav-button-right" onclick="nextPage()">›</button>
+            </div>
+        </main>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+            <div class="progress-text">
+                <span id="current-section">1</span> of <span id="total-sections">1</span>
+            </div>
+        </div>
+
+            <div id="error" class="error" style="display: none;">
+                <h3>Unable to load train data</h3>
+                <p>Please check your connection and try again.</p>
+                <button onclick="location.reload()">Retry</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentSectionIndex = 0;
+        let sections = [];
+        let cycleInterval;
+        let progressInterval;
+        let manualNavigation = false; // Flag to track if user is manually navigating
+        const CYCLE_DURATION = 10000; // 10 seconds per section for better readability
+
+        // Route color classes for different subway lines
+        const routeColorClasses = {
+            '1': 'mta-red', '2': 'mta-red', '3': 'mta-red',
+            '4': 'mta-green', '5': 'mta-green', '6': 'mta-green',
+            '7': 'mta-purple', 'A': 'mta-blue', 'C': 'mta-blue', 'E': 'mta-blue',
+            'B': 'mta-orange', 'D': 'mta-orange', 'F': 'mta-orange', 'M': 'mta-orange',
+            'G': 'mta-green-2', 'J': 'mta-brown', 'Z': 'mta-brown',
+            'L': 'mta-gray', 'N': 'mta-yellow', 'Q': 'mta-yellow', 'R': 'mta-yellow', 'W': 'mta-yellow',
+            'S': 'mta-gray'
+        };
+
+        function getRouteColorClass(route) {
+            return routeColorClasses[route] || 'mta-gray';
+        }
+
+        function formatMinutes(minutes) {
+            if (minutes < 1) {
+                return 'NOW';
+            } else if (minutes < 2) {
+                return '1 MIN';
+            } else {
+                return Math.round(minutes) + ' MIN';
+            }
+        }
+
+        function updateDisplay() {
+            if (sections.length === 0) return;
+
+            const section = sections[currentSectionIndex];
+            const stationName = document.getElementById('station-name');
+            const direction = document.getElementById('direction');
+            const lineType = document.getElementById('line-type');
+            const trainsList = document.getElementById('trains-list');
+            const currentSection = document.getElementById('current-section');
+            const totalSections = document.getElementById('total-sections');
+
+            // Update header info - separate station and direction
+            stationName.textContent = section.station;
+            direction.textContent = section.direction; // Show direction as badge
+            
+            // Add specific class for different directions
+            direction.className = 'direction';
+            if (section.direction === 'Northbound') {
+                direction.classList.add('direction-northbound');
+            } else if (section.direction === 'Southbound') {
+                direction.classList.add('direction-southbound');
+            } else if (section.direction === 'Manhattan Bound') {
+                direction.classList.add('direction-manhattan-bound');
+            } else if (section.direction === 'Brooklyn Bound') {
+                direction.classList.add('direction-brooklyn-bound');
+            }
+            
+            lineType.textContent = `Page ${section.page} of ${section.total_pages}`;
+
+            // Update trains list
+            trainsList.innerHTML = '';
+            section.trains.forEach(train => {
+                const trainElement = document.createElement('div');
+                trainElement.className = 'train-item';
+                
+                // Parse destination to separate primary and secondary parts
+                let primaryDestination = '';
+                let secondaryDestination = '';
+                
+                if (train.destination) {
+                    const destParts = train.destination.split('-');
+                    if (destParts.length > 1) {
+                        primaryDestination = destParts[0].trim();
+                        secondaryDestination = destParts.slice(1).join('-').trim();
+                    } else {
+                        primaryDestination = train.destination;
+                    }
+                }
+                
+                trainElement.innerHTML = `
+                    <div class="train-route-container">
+                        <span class="subway-icon large ${getRouteColorClass(train.route)}">${train.route}</span>
+                        <div>
+                            ${primaryDestination ? `<div class="train-destination">${primaryDestination}</div>` : ''}
+                            ${secondaryDestination ? `<div class="train-destination-secondary">${secondaryDestination}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="train-time">${formatMinutes(train.minutes)}</div>
+                `;
+                
+                trainsList.appendChild(trainElement);
+            });
+
+            // Update progress
+            currentSection.textContent = currentSectionIndex + 1;
+            totalSections.textContent = sections.length;
+        }
+
+        function startProgress() {
+            const progress = document.getElementById('progress');
+            progress.style.transition = 'none';
+            progress.style.width = '0%';
+            
+            setTimeout(() => {
+                progress.style.transition = `width ${CYCLE_DURATION}ms linear`;
+                progress.style.width = '100%';
+            }, 50);
+        }
+
+        function nextSection() {
+            currentSectionIndex = (currentSectionIndex + 1) % sections.length;
+            updateDisplay();
+            startProgress();
+        }
+
+        function nextPage() {
+            if (sections.length === 0) return;
+            
+            manualNavigation = true;
+            clearInterval(cycleInterval);
+            clearInterval(progressInterval);
+            
+            currentSectionIndex = (currentSectionIndex + 1) % sections.length;
+            updateDisplay();
+            
+            // Resume automatic cycling after 3 seconds of inactivity
+            setTimeout(() => {
+                if (manualNavigation) {
+                    manualNavigation = false;
+                    startCycling();
+                }
+            }, 3000);
+        }
+
+        function previousPage() {
+            if (sections.length === 0) return;
+            
+            manualNavigation = true;
+            clearInterval(cycleInterval);
+            clearInterval(progressInterval);
+            
+            currentSectionIndex = (currentSectionIndex - 1 + sections.length) % sections.length;
+            updateDisplay();
+            
+            // Resume automatic cycling after 3 seconds of inactivity
+            setTimeout(() => {
+                if (manualNavigation) {
+                    manualNavigation = false;
+                    startCycling();
+                }
+            }, 3000);
+        }
+
+        function startCycling() {
+            if (sections.length === 0) return;
+            
+            updateDisplay();
+            startProgress();
+            
+            cycleInterval = setInterval(nextSection, CYCLE_DURATION);
+        }
+
+        function stopCycling() {
+            if (cycleInterval) {
+                clearInterval(cycleInterval);
+                cycleInterval = null;
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                    sections = data.data;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
+                    document.getElementById('last-updated').textContent = data.last_updated;
+                    
+                    stopCycling();
+                    startCycling();
+                } else {
+                    throw new Error('No data available');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        // Initial data fetch
+        fetchData();
+
+        // Refresh data every 30 seconds
+        setInterval(fetchData, 30000);
+
+        // Handle visibility change to pause/resume cycling
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopCycling();
+            } else {
+                startCycling();
+            }
+        });
+    </script>
+</body>
+</html>
