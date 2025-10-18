@@ -201,3 +201,4 @@ This project is open source and available under the MIT License.
 - [ ] Historical data tracking
 - [ ] Push notifications
 - [ ] Multi-language support
+- [x] GitHub repository setup and documentation
