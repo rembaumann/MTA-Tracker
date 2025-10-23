@@ -128,6 +128,13 @@ def fetch_mta_data():
                             elif stop_id.endswith('S'):
                                 direction = "Southbound"
                         
+                        # Convert direction labels for non-L trains
+                        if trip_update.trip.route_id != 'L':
+                            if direction == "Northbound":
+                                direction = "Uptown"
+                            elif direction == "Southbound":
+                                direction = "Downtown"
+                        
                         # Create key for grouping by station ID instead of station name
                         group_key = (stop_id, direction)
                         

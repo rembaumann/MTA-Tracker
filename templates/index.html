@@ -12,7 +12,7 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <h1>MTA Tracker</h1>
+                <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
                 <div class="last-updated">
                     Last updated: <span id="last-updated">--:--:--</span>
                 </div>
@@ -121,6 +121,10 @@
                 direction.classList.add('direction-northbound');
             } else if (section.direction === 'Southbound') {
                 direction.classList.add('direction-southbound');
+            } else if (section.direction === 'Uptown') {
+                direction.classList.add('direction-uptown');
+            } else if (section.direction === 'Downtown') {
+                direction.classList.add('direction-downtown');
             } else if (section.direction === 'Manhattan Bound') {
                 direction.classList.add('direction-manhattan-bound');
             } else if (section.direction === 'Brooklyn Bound') {
