@@ -1,0 +1,18 @@
+[Unit]
+Description=MTA Tracker Flask Application
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/mta-tracker
+Environment="PATH=/home/pi/mta-tracker/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/pi/mta-tracker/venv/bin/python /home/pi/mta-tracker/app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

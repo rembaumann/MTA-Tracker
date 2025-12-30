@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=MTA Tracker Kiosk
+Exec=/home/pi/mta-tracker/kiosk.sh
+X-GNOME-Autostart-enabled=true
+

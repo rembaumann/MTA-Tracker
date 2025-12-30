@@ -265,4 +265,6 @@ if __name__ == '__main__':
     # Initial data fetch
     fetch_mta_data()
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # Production mode: debug=False for better performance
+    # Set debug=True only for development
+    app.run(debug=False, host='0.0.0.0', port=5001)
