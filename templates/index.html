@@ -12,14 +12,18 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
-                <div class="temperature-display">
-                    <span id="temperature">--</span>°F
+                <div class="header-left">
+                    <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
                 </div>
-            </div>
-            <div class="station-title-header">
-                <h2 id="station-name">Station Name</h2>
-                <span id="direction" class="direction">Direction</span>
+                <div class="header-center station-title-header">
+                    <h2 id="station-name">Station Name</h2>
+                    <span id="direction" class="direction">Direction</span>
+                </div>
+                <div class="header-right">
+                    <div class="temperature-display">
+                        <span id="temperature">--</span>°F
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -257,17 +261,37 @@
             try {
                 const response = await fetch('/api/temperature');
                 const data = await response.json();
+                console.log('Temperature API response:', data);
                 if (data.temperature !== null && data.temperature !== undefined) {
                     document.getElementById('temperature').textContent = data.temperature;
+                } else {
+                    console.warn('Temperature not available:', data);
+                    document.getElementById('temperature').textContent = '--';
                 }
             } catch (error) {
                 console.error('Error fetching temperature:', error);
+                document.getElementById('temperature').textContent = '--';
             }
         }
         
         // Fetch temperature every 5 minutes
         fetchTemperature();
         setInterval(fetchTemperature, 300000);
+        
+        // Debug: Check weather API status on load
+        async function checkWeatherStatus() {
+            try {
+                const response = await fetch('/api/debug/weather');
+                const data = await response.json();
+                console.log('Weather API Debug Info:', data);
+                if (!data.api_key_set) {
+                    console.error('Weather API key not set! Set OPENWEATHER_API_KEY environment variable.');
+                }
+            } catch (error) {
+                console.error('Error checking weather status:', error);
+            }
+        }
+        checkWeatherStatus();
 
         // Handle visibility change to pause/resume cycling
         document.addEventListener('visibilitychange', () => {

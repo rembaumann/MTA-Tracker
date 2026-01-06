@@ -27,9 +27,10 @@ body {
 header {
     margin-bottom: 0;
     color: white;
-    padding: 15px 20px 10px 20px;
+    padding: 15px 20px;
     background: #000000;
     flex-shrink: 0; /* Prevent header from shrinking */
+    border-bottom: 2px solid #333333;
 }
 
 .header-content {
@@ -39,6 +40,28 @@ header {
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
+    gap: 20px;
+}
+
+.header-left {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.header-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
 }
 
 .site-logo {
@@ -58,13 +81,14 @@ header h1 {
 }
 
 .temperature-display {
-    font-size: 1.4rem;
+    font-size: 2.5rem;
     font-weight: 600;
     font-family: 'Arial', sans-serif;
     color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
+    white-space: nowrap;
 }
 
 .temperature-display #temperature {
@@ -134,19 +158,17 @@ main {
 
 .station-title-header {
     text-align: center;
-    background: #000000;
-    padding: 12px 20px;
+    background: transparent;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
     flex-wrap: wrap;
-    border-bottom: 2px solid #333333;
-    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .station-title-header h2 {
-    font-size: 2.8rem;
+    font-size: 2.4rem;
     font-weight: 700;
     margin: 0;
     color: #ffffff;
@@ -505,8 +527,20 @@ main {
         min-height: 85px;
     }
     
+    .header-content {
+        gap: 15px;
+    }
+    
+    .station-title-header h2 {
+        font-size: 2rem;
+    }
+    
+    .station-title-header {
+        gap: 15px;
+    }
+    
     .temperature-display {
-        font-size: 1.2rem;
+        font-size: 2rem;
     }
     
     .footer {
@@ -602,8 +636,28 @@ main {
         min-height: 80px;
     }
     
+    .header-content {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .header-left,
+    .header-center,
+    .header-right {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    
+    .station-title-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .station-title-header {
+        gap: 12px;
+    }
+    
     .temperature-display {
-        font-size: 1.1rem;
+        font-size: 1.8rem;
     }
     
     .footer {

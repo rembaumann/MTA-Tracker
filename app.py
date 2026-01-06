@@ -22,6 +22,13 @@ ZIP_CODE = '10010'
 WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '')  # Set via environment variable
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
+# Debug: Print API key status on startup
+if WEATHER_API_KEY:
+    print(f"Weather API: Key found (length: {len(WEATHER_API_KEY)})")
+else:
+    print("Weather API: WARNING - OPENWEATHER_API_KEY not set!")
+    print("  Set it with: export OPENWEATHER_API_KEY='your_key_here'")
+
 def load_stops_data():
     """Load stops data into a dictionary for fast lookup"""
     stops = {}
@@ -251,6 +258,8 @@ def fetch_temperature():
     
     if not WEATHER_API_KEY:
         print("Warning: OPENWEATHER_API_KEY not set. Temperature will not be available.")
+        with temperature_lock:
+            current_temperature = None
         return
     
     try:
@@ -259,16 +268,53 @@ def fetch_temperature():
             'appid': WEATHER_API_KEY,
             'units': 'imperial'  # Get temperature in Fahrenheit
         }
-        response = requests.get(WEATHER_API_URL, params=params, timeout=5)
+        print(f"Fetching temperature for zip {ZIP_CODE}...")
+        response = requests.get(WEATHER_API_URL, params=params, timeout=10)
+        
+        # Check for API errors
+        if response.status_code == 401:
+            print("ERROR: Invalid API key. Please check your OPENWEATHER_API_KEY.")
+            print(f"  Response: {response.text}")
+            with temperature_lock:
+                current_temperature = None
+            return
+        elif response.status_code == 404:
+            print(f"ERROR: Location not found for zip {ZIP_CODE}")
+            print(f"  Response: {response.text}")
+            with temperature_lock:
+                current_temperature = None
+            return
+        
         response.raise_for_status()
         data = response.json()
+        
+        if 'main' not in data or 'temp' not in data['main']:
+            print(f"ERROR: Unexpected API response format: {data}")
+            with temperature_lock:
+                current_temperature = None
+            return
         
         temp = round(data['main']['temp'])
         with temperature_lock:
             current_temperature = temp
-        print(f"Temperature updated: {temp}°F")
+        print(f"✓ Temperature updated: {temp}°F for {ZIP_CODE}")
+    except requests.exceptions.Timeout:
+        print("ERROR: Timeout fetching temperature from OpenWeatherMap API")
+        with temperature_lock:
+            current_temperature = None
+    except requests.exceptions.RequestException as e:
+        print(f"ERROR: Network error fetching temperature: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"  Response status: {e.response.status_code}")
+            print(f"  Response text: {e.response.text}")
+        with temperature_lock:
+            current_temperature = None
     except Exception as e:
-        print(f"Error fetching temperature: {e}")
+        print(f"ERROR: Unexpected error fetching temperature: {e}")
+        import traceback
+        traceback.print_exc()
+        with temperature_lock:
+            current_temperature = None
 
 def data_updater():
     """Background thread to continuously update MTA data"""
@@ -311,7 +357,26 @@ def get_data():
 @app.route('/api/temperature')
 def get_temperature():
     with temperature_lock:
-        return jsonify({'temperature': current_temperature})
+        return jsonify({
+            'temperature': current_temperature,
+            'api_key_set': bool(WEATHER_API_KEY),
+            'zip_code': ZIP_CODE
+        })
+
+@app.route('/api/debug/weather')
+def debug_weather():
+    """Debug endpoint to check weather API status"""
+    with temperature_lock:
+        temp = current_temperature
+    
+    return jsonify({
+        'api_key_set': bool(WEATHER_API_KEY),
+        'api_key_length': len(WEATHER_API_KEY) if WEATHER_API_KEY else 0,
+        'api_key_preview': WEATHER_API_KEY[:8] + '...' if WEATHER_API_KEY and len(WEATHER_API_KEY) > 8 else 'Not set',
+        'zip_code': ZIP_CODE,
+        'current_temperature': temp,
+        'api_url': WEATHER_API_URL
+    })
 
 if __name__ == '__main__':
     # Start background thread for data updates
