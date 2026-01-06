@@ -38,6 +38,7 @@ header {
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .site-logo {
@@ -56,11 +57,39 @@ header h1 {
     font-family: 'Arial', sans-serif;
 }
 
+.temperature-display {
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-family: 'Arial', sans-serif;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.temperature-display #temperature {
+    font-weight: 700;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #000000;
+    padding: 12px 20px;
+    border-top: 1px solid #333333;
+    text-align: center;
+    z-index: 100;
+    flex-shrink: 0;
+}
+
 .last-updated {
-    font-size: 1rem;
+    font-size: 0.9rem;
     opacity: 0.8;
     font-weight: 400;
     font-family: 'Arial', sans-serif;
+    color: #cccccc;
 }
 
 main {
@@ -70,6 +99,7 @@ main {
     justify-content: center;
     background: #000000;
     padding: 0;
+    padding-bottom: 50px; /* Space for footer */
     overflow: hidden;
     min-height: 0; /* Allow flex child to shrink */
 }
@@ -467,11 +497,24 @@ main {
     
     main {
         padding: 0;
+        padding-bottom: 50px;
     }
     
     .train-item {
         padding: 20px 20px;
         min-height: 85px;
+    }
+    
+    .temperature-display {
+        font-size: 1.2rem;
+    }
+    
+    .footer {
+        padding: 10px 15px;
+    }
+    
+    .last-updated {
+        font-size: 0.85rem;
     }
     
     .subway-icon.large {
@@ -551,11 +594,24 @@ main {
     
     main {
         padding: 0;
+        padding-bottom: 45px;
     }
     
     .train-item {
         padding: 18px 18px;
         min-height: 80px;
+    }
+    
+    .temperature-display {
+        font-size: 1.1rem;
+    }
+    
+    .footer {
+        padding: 8px 12px;
+    }
+    
+    .last-updated {
+        font-size: 0.8rem;
     }
     
     .subway-icon.large {

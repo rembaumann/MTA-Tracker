@@ -14,6 +14,13 @@ latest_data = {}
 data_lock = threading.Lock()
 trips_headsign_by_id = None
 trips_headsign_by_route_direction = None
+current_temperature = None
+temperature_lock = threading.Lock()
+
+# Weather API configuration
+ZIP_CODE = '10010'
+WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '')  # Set via environment variable
+WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 def load_stops_data():
     """Load stops data into a dictionary for fast lookup"""
@@ -238,6 +245,31 @@ def fetch_mta_data():
             'total_sections': len(processed_data)
         }
 
+def fetch_temperature():
+    """Fetch current temperature from OpenWeatherMap API"""
+    global current_temperature
+    
+    if not WEATHER_API_KEY:
+        print("Warning: OPENWEATHER_API_KEY not set. Temperature will not be available.")
+        return
+    
+    try:
+        params = {
+            'zip': f'{ZIP_CODE},US',
+            'appid': WEATHER_API_KEY,
+            'units': 'imperial'  # Get temperature in Fahrenheit
+        }
+        response = requests.get(WEATHER_API_URL, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        temp = round(data['main']['temp'])
+        with temperature_lock:
+            current_temperature = temp
+        print(f"Temperature updated: {temp}°F")
+    except Exception as e:
+        print(f"Error fetching temperature: {e}")
+
 def data_updater():
     """Background thread to continuously update MTA data"""
     while True:
@@ -248,6 +280,19 @@ def data_updater():
             print(f"Error updating data: {e}")
             time.sleep(60)  # Wait longer on error
 
+def temperature_updater():
+    """Background thread to continuously update temperature"""
+    # Initial fetch
+    fetch_temperature()
+    
+    while True:
+        try:
+            time.sleep(300)  # Update every 5 minutes (weather doesn't change as frequently)
+            fetch_temperature()
+        except Exception as e:
+            print(f"Error updating temperature: {e}")
+            time.sleep(600)  # Wait longer on error
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -255,12 +300,27 @@ def index():
 @app.route('/api/data')
 def get_data():
     with data_lock:
-        return jsonify(latest_data)
+        data = latest_data.copy()
+    
+    # Add temperature to response
+    with temperature_lock:
+        data['temperature'] = current_temperature
+    
+    return jsonify(data)
+
+@app.route('/api/temperature')
+def get_temperature():
+    with temperature_lock:
+        return jsonify({'temperature': current_temperature})
 
 if __name__ == '__main__':
     # Start background thread for data updates
     updater_thread = threading.Thread(target=data_updater, daemon=True)
     updater_thread.start()
+    
+    # Start background thread for temperature updates
+    temp_thread = threading.Thread(target=temperature_updater, daemon=True)
+    temp_thread.start()
     
     # Initial data fetch
     fetch_mta_data()
