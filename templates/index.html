@@ -17,6 +17,10 @@
                     Last updated: <span id="last-updated">--:--:--</span>
                 </div>
             </div>
+            <div class="station-title-header">
+                <h2 id="station-name">Station Name</h2>
+                <span id="direction" class="direction">Direction</span>
+            </div>
         </header>
 
         <main>
@@ -29,15 +33,6 @@
                 <button id="prev-page" class="nav-button nav-button-left" onclick="previousPage()">‹</button>
                 
                 <div class="main-content">
-                    <div class="station-info">
-                        <div class="station-header">
-                            <h2 id="station-name">Station Name</h2>
-                            <span id="direction" class="direction">Direction</span>
-                        </div>
-                        <div class="direction-info">
-                            <span id="line-type" class="line-type">Line Type</span>
-                        </div>
-                    </div>
 
                     <div class="trains-container">
                         <div id="trains-list" class="trains-list">
@@ -48,17 +43,6 @@
                 
                 <button id="next-page" class="nav-button nav-button-right" onclick="nextPage()">›</button>
             </div>
-        </main>
-
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div id="progress" class="progress"></div>
-            </div>
-            <div class="progress-text">
-                <span id="current-section">1</span> of <span id="total-sections">1</span>
-            </div>
-        </div>
-
             <div id="error" class="error" style="display: none;">
                 <h3>Unable to load train data</h3>
                 <p>Please check your connection and try again.</p>
@@ -105,33 +89,32 @@
 
             const section = sections[currentSectionIndex];
             const stationName = document.getElementById('station-name');
-            const direction = document.getElementById('direction');
-            const lineType = document.getElementById('line-type');
             const trainsList = document.getElementById('trains-list');
-            const currentSection = document.getElementById('current-section');
-            const totalSections = document.getElementById('total-sections');
 
-            // Update header info - separate station and direction
-            stationName.textContent = section.station;
-            direction.textContent = section.direction; // Show direction as badge
-            
-            // Add specific class for different directions
-            direction.className = 'direction';
-            if (section.direction === 'Northbound') {
-                direction.classList.add('direction-northbound');
-            } else if (section.direction === 'Southbound') {
-                direction.classList.add('direction-southbound');
-            } else if (section.direction === 'Uptown') {
-                direction.classList.add('direction-uptown');
-            } else if (section.direction === 'Downtown') {
-                direction.classList.add('direction-downtown');
-            } else if (section.direction === 'Manhattan Bound') {
-                direction.classList.add('direction-manhattan-bound');
-            } else if (section.direction === 'Brooklyn Bound') {
-                direction.classList.add('direction-brooklyn-bound');
+            // Update header info - station name and direction are now in header
+            if (stationName) {
+                stationName.textContent = section.station;
             }
             
-            lineType.textContent = `Page ${section.page} of ${section.total_pages}`;
+            // Update direction in header
+            const headerDirection = document.querySelector('.station-title-header .direction');
+            if (headerDirection) {
+                headerDirection.textContent = section.direction;
+                headerDirection.className = 'direction';
+                if (section.direction === 'Northbound') {
+                    headerDirection.classList.add('direction-northbound');
+                } else if (section.direction === 'Southbound') {
+                    headerDirection.classList.add('direction-southbound');
+                } else if (section.direction === 'Uptown') {
+                    headerDirection.classList.add('direction-uptown');
+                } else if (section.direction === 'Downtown') {
+                    headerDirection.classList.add('direction-downtown');
+                } else if (section.direction === 'Manhattan Bound') {
+                    headerDirection.classList.add('direction-manhattan-bound');
+                } else if (section.direction === 'Brooklyn Bound') {
+                    headerDirection.classList.add('direction-brooklyn-bound');
+                }
+            }
 
             // Update trains list
             trainsList.innerHTML = '';
@@ -166,27 +149,11 @@
                 
                 trainsList.appendChild(trainElement);
             });
-
-            // Update progress
-            currentSection.textContent = currentSectionIndex + 1;
-            totalSections.textContent = sections.length;
-        }
-
-        function startProgress() {
-            const progress = document.getElementById('progress');
-            progress.style.transition = 'none';
-            progress.style.width = '0%';
-            
-            setTimeout(() => {
-                progress.style.transition = `width ${CYCLE_DURATION}ms linear`;
-                progress.style.width = '100%';
-            }, 50);
         }
 
         function nextSection() {
             currentSectionIndex = (currentSectionIndex + 1) % sections.length;
             updateDisplay();
-            startProgress();
         }
 
         function nextPage() {
@@ -231,7 +198,6 @@
             if (sections.length === 0) return;
             
             updateDisplay();
-            startProgress();
             
             cycleInterval = setInterval(nextSection, CYCLE_DURATION);
         }
