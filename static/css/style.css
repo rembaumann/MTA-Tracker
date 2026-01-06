@@ -122,8 +122,7 @@ main {
     align-items: stretch;
     justify-content: center;
     background: #000000;
-    padding: 0;
-    padding-bottom: 50px; /* Space for footer */
+    padding: 5px 0 50px 0; /* 5px top padding below dividing line, 50px bottom for footer */
     overflow: hidden;
     min-height: 0; /* Allow flex child to shrink */
 }
