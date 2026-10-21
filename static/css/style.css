@@ -456,29 +456,34 @@ button {
         min-width: 48px;
     }
 
+    .trains-list {
+        overflow: hidden;
+    }
+
     .train-item {
-        min-height: 56px;
+        flex: 1 1 0;
+        min-height: 0;
         max-height: none;
-        padding: 6px 12px;
+        padding: 2px 12px;
     }
 
     .train-bullet {
-        width: 46px;
-        height: 46px;
-        min-width: 46px;
-        font-size: 1.25rem;
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        font-size: 1.15rem;
     }
 
     .controls {
         gap: 8px;
-        padding: 8px 10px;
+        padding: 6px 10px;
     }
 
     .control-button {
         min-width: 0;
-        min-height: 56px;
-        font-size: 1.15rem;
-        padding: 0 10px;
+        min-height: 52px;
+        font-size: 1.1rem;
+        padding: 0 8px;
     }
 
     .page-indicator {
