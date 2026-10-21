@@ -9,7 +9,7 @@ from pathlib import Path
 from google.transit import gtfs_realtime_pb2
 
 import config_store
-from app import app, collect_arrivals, load_trips_headsigns, platforms_for_config
+from app import app, board_stations, collect_arrivals, load_trips_headsigns, platforms_for_config
 from config_store import normalize_config
 from gtfs_catalog import direction_labels, feed_urls_for_routes, get_stations, stations_by_id
 
@@ -161,6 +161,19 @@ class ArrivalTests(unittest.TestCase):
         self.assertEqual(groups[0]["trains"][0]["route"], "6")
         self.assertEqual(groups[0]["trains"][0]["destination"], "Pelham Bay Park")
 
+    def test_board_stations_keep_only_enabled_lines(self):
+        stations = board_stations({
+            "stations": [
+                {"id": "634", "directions": ["N"], "routes": ["4", "6"]},
+                {"id": "L03", "directions": ["N", "S"], "routes": ["L"]},
+            ]
+        })
+        self.assertEqual([station["id"] for station in stations], ["634", "L03"])
+        self.assertEqual(stations[0]["name"], "23 St")
+        self.assertEqual([route["id"] for route in stations[0]["routes"]], ["4", "6"])
+        self.assertEqual(stations[1]["name"], "14 St-Union Sq")
+        self.assertEqual([route["id"] for route in stations[1]["routes"]], ["L"])
+
     def test_platform_fallback_does_not_trust_the_l_direction_bit(self):
         _by_trip, _by_route, by_platform = load_trips_headsigns()
         self.assertIn("Canarsie", by_platform["L_S"])
@@ -185,8 +198,10 @@ class HttpTests(unittest.TestCase):
         self.assertIn("version", version.get_json())
         board = self.client.get("/")
         self.assertEqual(board.status_code, 200)
-        self.assertIn(b"line-picker", board.data)
-        self.assertIn(b"control-button", board.data)
+        self.assertIn(b"edge-button", board.data)
+        self.assertIn(b"station-menu", board.data)
+        self.assertNotIn(b"line-picker", board.data)
+        self.assertNotIn(b"pause-cycle", board.data)
         settings = self.client.get("/settings")
         self.assertEqual(settings.status_code, 200)
         self.assertIn(b"Add a station", settings.data)

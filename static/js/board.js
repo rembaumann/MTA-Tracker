@@ -1,11 +1,14 @@
 (function () {
+    var HOLD_MS = 20000;
     var state = {
         groups: [],
         sections: [],
         routes: [],
+        stations: [],
+        stationKey: "",
         index: 0,
-        selected: new Set(),
-        paused: false,
+        pinned: null,
+        holding: false,
         perPage: 5,
         cycleSeconds: 10,
         timer: null,
@@ -18,42 +21,27 @@
     var loading = document.getElementById("loading");
     var empty = document.getElementById("empty");
     var errorBox = document.getElementById("error");
-    var controls = document.getElementById("controls");
-    var picker = document.getElementById("line-picker");
-    var pauseButton = document.getElementById("pause-cycle");
+    var prevButton = document.getElementById("prev-page");
+    var nextButton = document.getElementById("next-page");
     var pageIndicator = document.getElementById("page-indicator");
+    var stationButton = document.getElementById("station-button");
     var stationName = document.getElementById("station-name");
+    var stationMenu = document.getElementById("station-menu");
     var direction = document.getElementById("direction");
     var cycleFill = document.getElementById("cycle-bar-fill");
 
-    function storedLines() {
-        try {
-            var raw = JSON.parse(sessionStorage.getItem("mta-lines") || "[]");
-            return new Set(Array.isArray(raw) ? raw : []);
-        } catch (err) {
-            return new Set();
-        }
-    }
-
-    state.selected = storedLines();
-
-    function persistLines() {
-        sessionStorage.setItem("mta-lines", JSON.stringify(Array.from(state.selected)));
-    }
-
     function sectionKey(section) {
         return section.station_id + ":" + section.page;
+    }
+
+    function parentId(group) {
+        return group.parent_id || String(group.station_id || "").slice(0, -1);
     }
 
     function rebuild() {
         var sections = [];
         state.groups.forEach(function (group) {
             var trains = group.trains || [];
-            if (state.selected.size) {
-                trains = trains.filter(function (train) {
-                    return state.selected.has(train.route);
-                });
-            }
             if (!trains.length) {
                 return;
             }
@@ -62,6 +50,7 @@
                 sections.push({
                     station: group.station,
                     station_id: group.station_id,
+                    parent_id: parentId(group),
                     direction: group.direction,
                     direction_id: group.direction_id,
                     page: page + 1,
@@ -92,8 +81,8 @@
         };
     }
 
-    function bulletLabel(route) {
-        var sameShort = state.routes.filter(function (item) {
+    function bulletLabel(route, routes) {
+        var sameShort = routes.filter(function (item) {
             return item.short === route.short;
         });
         return sameShort.length > 1 ? route.id : route.short;
@@ -107,7 +96,7 @@
         bullet.title = route.name || route.short;
         var text = document.createElement("span");
         text.className = "bullet-text";
-        text.textContent = className === "train-bullet" ? route.short : bulletLabel(route);
+        text.textContent = className === "train-bullet" ? route.short : bulletLabel(route, state.routes);
         bullet.appendChild(text);
         return bullet;
     }
@@ -136,88 +125,142 @@
         };
     }
 
-    function renderPicker() {
-        picker.innerHTML = "";
-        if (!state.routes.length) {
+    function currentParentId() {
+        if (state.pinned) {
+            return state.pinned.id;
+        }
+        var section = state.sections[state.index];
+        return section ? section.parent_id : null;
+    }
+
+    function stationSignature(stations) {
+        return stations.map(function (station) {
+            var routes = (station.routes || []).map(function (route) { return route.id; }).join(",");
+            return station.id + ":" + routes;
+        }).join("|");
+    }
+
+    function renderMenu() {
+        stationMenu.innerHTML = "";
+        state.stations.forEach(function (station) {
+            var option = document.createElement("button");
+            option.type = "button";
+            option.className = "station-option";
+            option.setAttribute("role", "option");
+            option.dataset.stationId = station.id;
+
+            var name = document.createElement("span");
+            name.className = "station-option-name";
+            name.textContent = station.name;
+            option.appendChild(name);
+
+            var lines = document.createElement("span");
+            lines.className = "menu-lines";
+            (station.routes || []).forEach(function (route) {
+                var bullet = document.createElement("span");
+                bullet.className = "menu-bullet";
+                bullet.style.background = route.color;
+                bullet.style.color = route.text_color;
+                bullet.textContent = bulletLabel(route, station.routes || []);
+                lines.appendChild(bullet);
+            });
+            option.appendChild(lines);
+            option.addEventListener("click", function () {
+                jumpToStation(station.id);
+            });
+            stationMenu.appendChild(option);
+        });
+        markCurrentStation();
+    }
+
+    function markCurrentStation() {
+        var current = currentParentId();
+        var options = stationMenu.querySelectorAll(".station-option");
+        options.forEach(function (option) {
+            var selected = option.dataset.stationId === current;
+            option.classList.toggle("is-current", selected);
+            option.setAttribute("aria-selected", selected ? "true" : "false");
+        });
+    }
+
+    function menuOpen() {
+        return !stationMenu.hidden;
+    }
+
+    function closeMenu() {
+        stationMenu.hidden = true;
+        stationButton.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu() {
+        if (!state.stations.length) {
             return;
         }
-        var all = document.createElement("button");
-        all.type = "button";
-        all.className = "line-all" + (state.selected.size ? "" : " is-active");
-        all.textContent = "All";
-        all.addEventListener("click", function () {
-            state.selected.clear();
-            persistLines();
-            onFilterChange();
-        });
-        picker.appendChild(all);
-
-        state.routes.forEach(function (route) {
-            var button = document.createElement("button");
-            button.type = "button";
-            button.className = "route-bullet" + (route.express ? " express" : "");
-            button.style.background = route.color;
-            button.style.color = route.text_color;
-            button.title = route.name || route.short;
-            button.setAttribute("aria-label", route.name || route.short);
-            button.setAttribute("aria-pressed", state.selected.has(route.id) ? "true" : "false");
-            if (state.selected.size && !state.selected.has(route.id)) {
-                button.classList.add("is-dim");
-            }
-            var text = document.createElement("span");
-            text.className = "bullet-text";
-            text.textContent = bulletLabel(route);
-            button.appendChild(text);
-            button.addEventListener("click", function () {
-                toggleRoute(route.id);
-            });
-            picker.appendChild(button);
-        });
+        if (menuOpen()) {
+            closeMenu();
+            return;
+        }
+        renderMenu();
+        stationMenu.hidden = false;
+        stationButton.setAttribute("aria-expanded", "true");
     }
 
-    function toggleRoute(routeId) {
-        if (state.selected.size === 0) {
-            state.selected = new Set([routeId]);
-        } else if (state.selected.has(routeId)) {
-            state.selected.delete(routeId);
-        } else {
-            state.selected.add(routeId);
-        }
-        if (state.selected.size === state.routes.length) {
-            state.selected.clear();
-        }
-        persistLines();
-        onFilterChange();
+    function setEmptyCopy(title, body) {
+        document.getElementById("empty-title").textContent = title;
+        document.getElementById("empty-body").textContent = body;
     }
 
-    function onFilterChange() {
-        state.index = 0;
-        rebuild();
-        renderPicker();
-        render();
-        kickCycle(true);
+    function setArrows() {
+        var enabled = state.sections.length > 1;
+        prevButton.disabled = !enabled;
+        nextButton.disabled = !enabled;
+    }
+
+    function renderPinned() {
+        loading.hidden = true;
+        errorBox.hidden = true;
+        trainsList.hidden = true;
+        empty.hidden = false;
+        stationName.textContent = state.pinned.name;
+        direction.hidden = true;
+        setEmptyCopy("No upcoming trains", "Nothing is due at this station in the current window.");
+        pageIndicator.textContent = state.holding ? "Holding" : "";
+        setArrows();
+        markCurrentStation();
     }
 
     function render() {
+        if (state.pinned) {
+            var match = -1;
+            for (var i = 0; i < state.sections.length; i += 1) {
+                if (state.sections[i].parent_id === state.pinned.id) {
+                    match = i;
+                    break;
+                }
+            }
+            if (match >= 0) {
+                state.index = match;
+                state.pinned = null;
+            } else {
+                renderPinned();
+                return;
+            }
+        }
+
         var hasSections = state.sections.length > 0;
         loading.hidden = true;
         errorBox.hidden = true;
         empty.hidden = hasSections;
         trainsList.hidden = !hasSections;
-        controls.classList.toggle("is-disabled", !hasSections);
+        setArrows();
 
         if (!hasSections) {
             stationName.textContent = "No trains";
             direction.hidden = true;
-            pageIndicator.textContent = "–";
+            pageIndicator.textContent = "";
             stopCycleBar();
-            var filtered = state.selected.size > 0;
-            document.getElementById("empty-title").textContent = filtered
-                ? "No trains on those lines"
-                : "No upcoming trains";
-            document.getElementById("empty-body").textContent = filtered
-                ? "Try All, or another line."
-                : "Nothing is due in the current window.";
+            setEmptyCopy("No upcoming trains", "Nothing is due in the current window.");
+            markCurrentStation();
             return;
         }
 
@@ -225,7 +268,7 @@
         stationName.textContent = section.station;
         direction.hidden = false;
         direction.textContent = section.direction;
-        direction.className = "direction direction-" + section.direction_id.toLowerCase();
+        direction.className = "direction direction-" + String(section.direction_id).toLowerCase();
 
         trainsList.innerHTML = "";
         section.trains.forEach(function (train) {
@@ -263,9 +306,9 @@
             trainsList.appendChild(item);
         });
 
-        pageIndicator.textContent = state.paused
-            ? "Paused " + (state.index + 1) + "/" + state.sections.length
-            : (state.index + 1) + " / " + state.sections.length;
+        var label = (state.index + 1) + " / " + state.sections.length;
+        pageIndicator.textContent = state.holding ? label + " · holding" : label;
+        markCurrentStation();
     }
 
     function stopTimer() {
@@ -282,7 +325,7 @@
 
     function restartCycleBar() {
         stopCycleBar();
-        if (state.paused || state.sections.length < 2) {
+        if (state.holding || state.sections.length < 2) {
             return;
         }
         window.requestAnimationFrame(function () {
@@ -293,8 +336,10 @@
 
     function startTimer() {
         stopTimer();
-        if (state.paused || state.sections.length < 2) {
+        state.holding = false;
+        if (state.sections.length < 2) {
             stopCycleBar();
+            render();
             return;
         }
         restartCycleBar();
@@ -303,52 +348,55 @@
             render();
             restartCycleBar();
         }, state.cycleSeconds * 1000);
-    }
-
-    function kickCycle(resetBar) {
-        clearTimeout(state.resumeTimer);
-        state.resumeTimer = null;
-        if (state.paused) {
-            stopTimer();
-            stopCycleBar();
-            return;
-        }
-        if (resetBar) {
-            startTimer();
-        }
-    }
-
-    function step(delta) {
-        if (!state.sections.length) {
-            return;
-        }
-        state.index = (state.index + delta + state.sections.length) % state.sections.length;
         render();
-        if (state.paused) {
-            return;
-        }
+    }
+
+    function holdCycle() {
+        state.holding = true;
         stopTimer();
         stopCycleBar();
         clearTimeout(state.resumeTimer);
         state.resumeTimer = setTimeout(function () {
-            if (!state.paused) {
-                startTimer();
-            }
-        }, 20000);
+            state.resumeTimer = null;
+            state.pinned = null;
+            startTimer();
+        }, HOLD_MS);
+        render();
     }
 
-    function setPaused(paused) {
-        state.paused = paused;
-        pauseButton.textContent = paused ? "Resume" : "Pause";
-        pauseButton.setAttribute("aria-pressed", paused ? "true" : "false");
-        clearTimeout(state.resumeTimer);
-        render();
-        if (paused) {
-            stopTimer();
-            stopCycleBar();
-        } else {
-            startTimer();
+    function step(delta) {
+        closeMenu();
+        if (state.sections.length < 2) {
+            return;
         }
+        state.pinned = null;
+        state.index = (state.index + delta + state.sections.length) % state.sections.length;
+        holdCycle();
+    }
+
+    function jumpToStation(stationId) {
+        closeMenu();
+        var station = null;
+        for (var i = 0; i < state.stations.length; i += 1) {
+            if (state.stations[i].id === stationId) {
+                station = state.stations[i];
+                break;
+            }
+        }
+        var index = -1;
+        for (var j = 0; j < state.sections.length; j += 1) {
+            if (state.sections[j].parent_id === stationId) {
+                index = j;
+                break;
+            }
+        }
+        if (index >= 0) {
+            state.pinned = null;
+            state.index = index;
+        } else if (station) {
+            state.pinned = station;
+        }
+        holdCycle();
     }
 
     function showError(message) {
@@ -359,6 +407,7 @@
         document.getElementById("error-body").textContent = message;
         stationName.textContent = "MTA Tracker";
         direction.hidden = true;
+        setArrows();
     }
 
     function applyTemperature(value) {
@@ -385,19 +434,29 @@
             var previousCycle = state.cycleSeconds;
             state.groups = data.groups || [];
             state.routes = data.routes || [];
+            state.stations = data.stations || [];
             state.perPage = data.trains_per_page || 5;
             state.cycleSeconds = data.cycle_seconds || 10;
             state.ready = true;
 
-            var available = new Set(state.routes.map(function (route) { return route.id; }));
-            state.selected.forEach(function (routeId) {
-                if (!available.has(routeId)) {
-                    state.selected.delete(routeId);
-                }
-            });
+            var signature = stationSignature(state.stations);
+            var stationsChanged = signature !== state.stationKey;
+            state.stationKey = signature;
 
             rebuild();
-            if (previousKey) {
+            if (state.pinned) {
+                var pinnedIndex = -1;
+                for (var i = 0; i < state.sections.length; i += 1) {
+                    if (state.sections[i].parent_id === state.pinned.id) {
+                        pinnedIndex = i;
+                        break;
+                    }
+                }
+                if (pinnedIndex >= 0) {
+                    state.index = pinnedIndex;
+                    state.pinned = null;
+                }
+            } else if (previousKey) {
                 var kept = state.sections.findIndex(function (section) {
                     return sectionKey(section) === previousKey;
                 });
@@ -416,9 +475,11 @@
             }
 
             state.hasShown = true;
-            renderPicker();
+            if (stationsChanged || menuOpen()) {
+                renderMenu();
+            }
             render();
-            if (state.sections.length < 2 || state.paused) {
+            if (state.sections.length < 2 || state.holding) {
                 stopTimer();
                 stopCycleBar();
             } else if (!state.timer || previousCycle !== state.cycleSeconds) {
@@ -433,23 +494,35 @@
         }
     }
 
-    document.getElementById("prev-page").addEventListener("click", function () { step(-1); });
-    document.getElementById("next-page").addEventListener("click", function () { step(1); });
-    pauseButton.addEventListener("click", function () { setPaused(!state.paused); });
+    prevButton.addEventListener("click", function () { step(-1); });
+    nextButton.addEventListener("click", function () { step(1); });
+    stationButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        toggleMenu();
+    });
     document.getElementById("retry").addEventListener("click", function () {
         errorBox.hidden = true;
         loading.hidden = false;
         fetchData();
     });
 
+    document.addEventListener("click", function (event) {
+        if (!menuOpen()) {
+            return;
+        }
+        if (stationMenu.contains(event.target) || stationButton.contains(event.target)) {
+            return;
+        }
+        closeMenu();
+    });
+
     document.addEventListener("keydown", function (event) {
-        if (event.key === "ArrowRight") {
+        if (event.key === "Escape") {
+            closeMenu();
+        } else if (event.key === "ArrowRight") {
             step(1);
         } else if (event.key === "ArrowLeft") {
             step(-1);
-        } else if (event.key === " ") {
-            event.preventDefault();
-            setPaused(!state.paused);
         }
     });
 
@@ -457,7 +530,7 @@
         if (document.hidden) {
             stopTimer();
             stopCycleBar();
-        } else if (!state.paused) {
+        } else if (!state.holding && state.sections.length > 1) {
             startTimer();
         }
     });

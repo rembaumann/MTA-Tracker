@@ -27,8 +27,9 @@
         button.className = "route-bullet" + (route.express ? " express" : "") + (pressed ? "" : " is-dim");
         button.style.background = route.color;
         button.style.color = route.text_color;
-        button.title = route.name || route.short;
+        button.title = (route.name || route.short) + (pressed ? " (shown)" : " (hidden)");
         button.setAttribute("aria-pressed", pressed ? "true" : "false");
+        button.setAttribute("aria-label", (route.name || route.short) + (pressed ? ", shown on the board" : ", hidden on the board"));
         var text = document.createElement("span");
         text.className = "bullet-text";
         text.textContent = route.short;

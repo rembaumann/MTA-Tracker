@@ -16,8 +16,16 @@
                 <span id="brand-fallback" class="brand-fallback" hidden>MTA</span>
             </div>
             <div class="station-block">
-                <h1 id="station-name">Loading</h1>
+                <h1 class="station-heading">
+                    <button type="button" id="station-button" class="station-button" aria-haspopup="listbox" aria-expanded="false" aria-controls="station-menu">
+                        <span id="station-name">Loading</span>
+                        <svg class="station-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M6.5 9h11L12 16.5z"/>
+                        </svg>
+                    </button>
+                </h1>
                 <span id="direction" class="direction" hidden></span>
+                <div id="station-menu" class="station-dropdown" role="listbox" hidden></div>
             </div>
             <div class="top-actions">
                 <div class="temperature" id="temperature-wrap" hidden>
@@ -31,9 +39,13 @@
             </div>
         </header>
 
-        <nav id="line-picker" class="line-picker" aria-label="Lines"></nav>
-
-        <main class="arrivals">
+        <div class="stage">
+            <button type="button" id="prev-page" class="edge-button" aria-label="Previous" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M15.7 3.3 7.2 12l8.5 8.7 2.2-2.2L11.6 12l6.3-6.5z"/>
+                </svg>
+            </button>
+            <main class="arrivals">
             <div id="loading" class="message">
                 <div class="spinner"></div>
                 <p>Loading trains…</p>
@@ -49,19 +61,19 @@
                 <button type="button" id="retry" class="text-button">Retry</button>
             </div>
             <ol id="trains-list" class="trains-list" hidden></ol>
-        </main>
+            </main>
+            <button type="button" id="next-page" class="edge-button edge-next" aria-label="Next" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M8.3 3.3 16.8 12l-8.5 8.7-2.2-2.2L12.4 12 6.1 5.5z"/>
+                </svg>
+            </button>
+        </div>
 
         <div class="cycle-bar" aria-hidden="true"><div id="cycle-bar-fill"></div></div>
 
-        <div class="controls" id="controls">
-            <button type="button" id="prev-page" class="control-button">‹ Prev</button>
-            <button type="button" id="pause-cycle" class="control-button control-pause" aria-pressed="false">Pause</button>
-            <div class="page-indicator" id="page-indicator">–</div>
-            <button type="button" id="next-page" class="control-button">Next ›</button>
-        </div>
-
         <footer class="statusbar">
             <span>Updated <time id="last-updated">--</time></span>
+            <span class="page-indicator" id="page-indicator"></span>
             <span class="status-note" id="status-note"></span>
             <span class="version" id="app-version" title="Running version"></span>
         </footer>

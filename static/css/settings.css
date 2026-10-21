@@ -134,6 +134,14 @@
     cursor: pointer;
 }
 
+.line-row .route-bullet.is-dim {
+    filter: grayscale(1) brightness(0.72);
+}
+
+.line-row .route-bullet:not(.is-dim) {
+    filter: none;
+}
+
 .search {
     width: 100%;
     min-height: 60px;

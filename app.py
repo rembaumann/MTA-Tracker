@@ -38,6 +38,7 @@ app = Flask(__name__)
 latest_data = {
     "groups": [],
     "routes": [],
+    "stations": [],
     "last_updated": None,
     "trains_per_page": 5,
     "cycle_seconds": 10,
@@ -280,6 +281,20 @@ def configured_route_ids(config):
     return route_ids
 
 
+def board_stations(config):
+    """Saved stations in rotation order, with only the lines turned on for each."""
+    catalog = stations_by_id()
+    stations = []
+    for station in config["stations"]:
+        known = catalog.get(station["id"], {})
+        stations.append({
+            "id": station["id"],
+            "name": known.get("name", station["id"]),
+            "routes": route_payloads(station["routes"]),
+        })
+    return stations
+
+
 def fetch_mta_data():
     """Refresh the in-memory board from the configured stations."""
     global latest_data
@@ -308,6 +323,7 @@ def fetch_mta_data():
     payload = {
         "groups": groups,
         "routes": route_payloads(route_ids),
+        "stations": board_stations(config),
         "last_updated": datetime.now().strftime("%H:%M:%S"),
         "trains_per_page": config["trains_per_page"],
         "cycle_seconds": config["cycle_seconds"],

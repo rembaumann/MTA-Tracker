@@ -9,7 +9,7 @@ A Raspberry Pi 4 (4 GB or 8 GB) is the one this kiosk runs on. A Pi 3B+ can work
 Display options:
 
 - Official 7-inch touchscreen. The controls are sized for that panel.
-- Any HDMI monitor. Touch is optional. Previous and Next still work with a mouse, and the board cycles on its own.
+- Any HDMI monitor. Touch is optional. The side arrows work with a mouse, and the board cycles on its own.
 - A small HDMI panel, 5 to 7 inches.
 
 Also needed: a 32 GB or larger microSD card, a proper power supply, and an HDMI cable if the display is not the DSI panel.

@@ -70,7 +70,7 @@ Stations that share a name are separate stops. The line bullets are how you tell
 
 ## The board
 
-The bullets under the header filter the rotation. **All** cycles every configured line. Tap a bullet to keep that line, and tap more to add them. Previous and Next move by hand and hold the page for 20 seconds before cycling resumes. Pause keeps the current page until you resume.
+The board cycles through each saved station, direction, and page. The arrows on the left and right edges move backward and forward. A tap holds that position for 20 seconds, then cycling resumes. Tap the station name to open the stations saved in settings and jump to one. A line turned off for a station in settings does not appear on the board.
 
 Arrivals are grouped by platform. The L says Manhattan or Brooklyn. The 7 says Queens or Manhattan. Most other lines say Uptown or Downtown.
 

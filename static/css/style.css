@@ -52,6 +52,8 @@ button {
     padding: 10px 16px;
     border-bottom: 3px solid var(--amber);
     flex: 0 0 auto;
+    position: relative;
+    z-index: 5;
 }
 
 .brand {
@@ -82,14 +84,107 @@ button {
     min-width: 0;
 }
 
-#station-name {
+.station-heading {
+    min-width: 0;
+    max-width: 100%;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.station-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    min-height: 56px;
+    padding: 4px 10px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid transparent;
+    cursor: pointer;
     font-size: clamp(1.35rem, 3.2vw, 2.5rem);
     font-weight: 700;
     letter-spacing: -0.02em;
+}
+
+.station-button[aria-expanded="true"] {
+    background: #1a1a1a;
+    border-color: #3a3a3a;
+}
+
+#station-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+}
+
+.station-chevron {
+    width: 0.55em;
+    height: 0.55em;
+    flex: 0 0 auto;
+    color: var(--amber);
+}
+
+.station-dropdown {
+    position: absolute;
+    z-index: 6;
+    left: 8px;
+    right: 8px;
+    top: 100%;
+    max-height: min(420px, calc(100vh - 96px));
+    overflow: auto;
+    background: #141414;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.station-option {
+    width: 100%;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #141414;
+    color: #fff;
+    border: 0;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.station-option.is-current {
+    background: #2a220c;
+    box-shadow: inset 4px 0 0 var(--amber);
+}
+
+.station-option-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.menu-lines {
+    display: flex;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.menu-bullet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 800;
 }
 
 .direction {
@@ -137,24 +232,11 @@ button {
 .settings-button:active,
 .control-button:active,
 .route-bullet:active,
-.line-all:active {
+.edge-button:active:not(:disabled),
+.station-option:active {
     transform: scale(0.97);
 }
 
-.line-picker {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    overflow-x: auto;
-    flex: 0 0 auto;
-    border-bottom: 1px solid var(--line);
-    scrollbar-width: none;
-}
-
-.line-picker::-webkit-scrollbar { display: none; }
-
-.line-all,
 .route-bullet,
 .train-bullet {
     flex: 0 0 auto;
@@ -164,22 +246,6 @@ button {
     border: 0;
     cursor: pointer;
     font-weight: 800;
-}
-
-.line-all {
-    height: 52px;
-    min-width: 72px;
-    padding: 0 16px;
-    background: #1c1c1c;
-    color: #fff;
-    border: 2px solid #444;
-    font-size: 1.15rem;
-}
-
-.line-all.is-active {
-    background: var(--amber);
-    color: #111;
-    border-color: var(--amber);
 }
 
 .route-bullet,
@@ -216,8 +282,47 @@ button {
     line-height: 1;
 }
 
+.stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+}
+
+.edge-button {
+    flex: 0 0 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #0c0c0c;
+    color: var(--amber);
+    border: 0;
+    border-right: 1px solid #2a2a2a;
+    cursor: pointer;
+}
+
+.edge-button svg {
+    width: 52px;
+    height: 52px;
+}
+
+.edge-next {
+    border-right: 0;
+    border-left: 1px solid #2a2a2a;
+}
+
+.edge-button:disabled {
+    color: #2e2e2e;
+    cursor: default;
+}
+
 .arrivals {
     flex: 1 1 auto;
+    min-width: 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -364,15 +469,6 @@ button {
     transform-origin: left center;
 }
 
-.controls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 10px 16px;
-    background: #0a0a0a;
-    flex: 0 0 auto;
-}
-
 .control-button {
     min-height: var(--touch);
     min-width: 120px;
@@ -385,33 +481,15 @@ button {
     cursor: pointer;
 }
 
-.controls .control-button {
-    flex: 1 1 0;
-    min-width: 0;
-}
-
-.control-pause {
-    min-width: 120px;
-}
-
 .control-button:disabled {
     color: #666;
     cursor: default;
 }
 
-.controls.is-disabled .control-button {
-    opacity: 0.4;
-    pointer-events: none;
-}
-
 .page-indicator {
-    flex: 0 0 auto;
-    min-width: 92px;
-    text-align: center;
-    font-size: 1.15rem;
-    font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: #ddd;
+    white-space: nowrap;
 }
 
 .statusbar {
@@ -448,9 +526,25 @@ button {
         height: 52px;
     }
 
-    .line-picker { padding: 6px 10px; gap: 8px; }
+    .station-button {
+        min-height: 48px;
+        font-size: clamp(1.15rem, 3vw, 1.7rem);
+    }
 
-    .line-all,
+    .station-option {
+        min-height: 56px;
+        font-size: 1.05rem;
+    }
+
+    .edge-button {
+        flex-basis: 64px;
+    }
+
+    .edge-button svg {
+        width: 44px;
+        height: 44px;
+    }
+
     .route-bullet {
         height: 48px;
         min-width: 48px;
@@ -474,21 +568,8 @@ button {
         font-size: 1.15rem;
     }
 
-    .controls {
-        gap: 8px;
-        padding: 6px 10px;
-    }
-
-    .control-button {
-        min-width: 0;
-        min-height: 52px;
-        font-size: 1.1rem;
-        padding: 0 8px;
-    }
-
     .page-indicator {
-        min-width: 72px;
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
 }
 
