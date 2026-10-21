@@ -8,6 +8,10 @@ import os
 import requests
 import sys
 
+from config_store import load_dotenv
+
+load_dotenv()
+
 ZIP_CODE = '10010'
 WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '')
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather'
@@ -22,7 +26,7 @@ def test_weather_api():
     if not WEATHER_API_KEY:
         print("❌ ERROR: OPENWEATHER_API_KEY environment variable is not set!")
         print()
-        print("To set it:")
+        print("To set it, add OPENWEATHER_API_KEY to .env (see .env.example) or:")
         print("  export OPENWEATHER_API_KEY='your_api_key_here'")
         print()
         print("Or on Windows:")
