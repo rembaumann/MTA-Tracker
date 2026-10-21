@@ -1,691 +1,582 @@
+:root {
+    --bg: #000000;
+    --panel: #121212;
+    --row: #1a1a1a;
+    --line: #2c2c2c;
+    --amber: #f0b323;
+    --muted: #9b9b9b;
+    --text: #ffffff;
+    --touch: 64px;
+    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-body {
-    font-family: 'Arial', 'Helvetica', sans-serif;
-    background: #000000;
-    min-height: 100vh;
-    color: #ffffff;
+html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+}
+
+body.board-page {
     overflow: hidden;
 }
 
-.container {
-    max-width: 100vw;
-    margin: 0 auto;
-    padding: 0;
-    height: 100vh;
-    max-height: 100vh;
+button, a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    font-family: inherit;
+}
+
+.board {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    background: #000000;
     overflow: hidden;
+    background: var(--bg);
 }
 
-header {
-    margin-bottom: 0;
-    color: white;
-    padding: 15px 20px;
-    background: #000000;
-    flex-shrink: 0; /* Prevent header from shrinking */
-    border-bottom: 2px solid #333333;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
+.topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    gap: 20px;
-}
-
-.header-left {
+    gap: 16px;
+    padding: 10px 16px;
+    border-bottom: 3px solid var(--amber);
     flex: 0 0 auto;
-    display: flex;
-    align-items: center;
+    position: relative;
+    z-index: 5;
 }
 
-.header-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.header-right {
-    flex: 0 0 auto;
+.brand {
     display: flex;
     align-items: center;
+    min-width: 56px;
 }
 
 .site-logo {
-    height: 60px;
+    height: 48px;
     width: auto;
-    max-width: 200px;
+    max-width: 140px;
     object-fit: contain;
     display: block;
 }
 
-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    font-family: 'Arial', sans-serif;
-}
-
-.temperature-display {
-    font-size: 2.5rem;
-    font-weight: 600;
-    font-family: 'Arial', sans-serif;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
-}
-
-.temperature-display #temperature {
-    font-weight: 700;
-}
-
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #000000;
-    padding: 12px 20px;
-    border-top: 1px solid #333333;
-    text-align: center;
-    z-index: 100;
-    flex-shrink: 0;
-}
-
-.last-updated {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    font-weight: 400;
-    font-family: 'Arial', sans-serif;
-    color: #cccccc;
-}
-
-main {
-    flex: 1;
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    background: #000000;
-    padding: 5px 0 50px 0; /* 5px top padding below dividing line, 50px bottom for footer */
-    overflow: hidden;
-    min-height: 0; /* Allow flex child to shrink */
-}
-
-.content {
-    background: #000000;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
-    width: 100%;
-    max-width: 1200px;
-    text-align: left;
-    animation: none;
-    display: flex;
-    align-items: stretch;
-    gap: 10px;
-    height: 100%;
-    min-height: 0; /* Allow flex child to shrink */
-}
-
-.main-content {
-    flex: 1;
-    max-width: 100%;
-    margin: 0 auto;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Allow flex child to shrink */
-    overflow: hidden;
-}
-
-.station-title-header {
-    text-align: center;
-    background: transparent;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.station-title-header h2 {
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin: 0;
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
-}
-
-
-.station-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.direction {
-    color: white;
-    padding: 8px 20px;
-    border-radius: 0;
-    font-weight: 600;
+.brand-fallback {
+    font-weight: 800;
+    letter-spacing: 0.08em;
     font-size: 1.4rem;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
 }
 
-.direction-northbound {
-    background: #cc0000;
-}
-
-.direction-southbound {
-    background: #0066cc;
-}
-
-.direction-uptown {
-    background: #cc0000; /* Red for Uptown (same as Northbound) */
-}
-
-.direction-downtown {
-    background: #0066cc; /* Blue for Downtown (same as Southbound) */
-}
-
-.direction-manhattan-bound {
-    background: #808183; /* Gray for L train Manhattan bound */
-}
-
-.direction-brooklyn-bound {
-    background: #808183; /* Gray for L train Brooklyn bound */
-}
-
-
-.trains-container {
-    margin-bottom: 0;
-    background: #000000;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Allow flex child to shrink */
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Navigation controls removed - buttons now positioned outside */
-
-.trains-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: #000000;
-    width: 100%;
-    min-height: 100%;
-}
-
-.nav-button {
-    background: #333333;
-    color: white;
-    border: 1px solid #555555;
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
+.station-block {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Arial', sans-serif;
-    transition: all 0.2s ease;
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1000;
-    border-radius: 3px;
+    gap: 14px;
+    min-width: 0;
 }
 
-.nav-button-left {
-    left: 10px;
+.station-heading {
+    min-width: 0;
+    max-width: 100%;
+    font-size: inherit;
+    font-weight: inherit;
 }
 
-.nav-button-right {
-    right: 10px;
+.station-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    min-height: 56px;
+    padding: 4px 10px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: clamp(1.35rem, 3.2vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
-.nav-button:hover {
-    background: #444444;
-    border-color: #666666;
-    transform: translateY(-50%) scale(1.1);
+.station-button[aria-expanded="true"] {
+    background: #1a1a1a;
+    border-color: #3a3a3a;
 }
 
-.nav-button:active {
-    transform: translateY(-50%) scale(0.9);
+#station-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
-.nav-button:disabled {
-    background: #222222;
-    color: #666666;
-    border-color: #333333;
-    cursor: not-allowed;
-    transform: none;
+.station-chevron {
+    width: 0.55em;
+    height: 0.55em;
+    flex: 0 0 auto;
+    color: var(--amber);
 }
 
-.train-item {
+.station-dropdown {
+    position: absolute;
+    z-index: 6;
+    left: 8px;
+    right: 8px;
+    top: 100%;
+    max-height: min(420px, calc(100vh - 96px));
+    overflow: auto;
+    background: #141414;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.station-option {
+    width: 100%;
+    min-height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #333333;
-    padding: 25px 25px;
-    border-radius: 0;
-    border: none;
-    transition: none;
-    animation: none;
-    border-bottom: 2px solid #444444;
-    font-family: 'Arial', sans-serif;
-    min-height: 100px;
-    flex-shrink: 0; /* Prevent items from shrinking */
-}
-
-.train-item:last-child {
-    border-bottom: none;
-}
-
-.train-item:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.train-route-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    flex: 1;
-}
-
-.train-time {
-    font-size: 2.5rem;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #141414;
+    color: #fff;
+    border: 0;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: #ffffff;
-    text-align: right;
-    font-family: 'Arial', sans-serif;
-    min-width: 100px;
-    flex-shrink: 0;
-}
-
-.train-destination {
-    font-size: 1.9rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-left: 20px;
-    font-family: 'Arial', sans-serif;
-    line-height: 1.2;
-}
-
-.train-destination-secondary {
-    font-size: 1.4rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-left: 20px;
-    font-family: 'Arial', sans-serif;
-    opacity: 0.9;
-    line-height: 1.2;
-}
-
-
-.loading {
-    text-align: center;
-    color: white;
-    background: #000000;
-    padding: 40px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top: 3px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading p {
-    font-size: 1.1rem;
-    font-weight: 400;
-    font-family: 'Arial', sans-serif;
-}
-
-.error {
-    text-align: center;
-    color: white;
-    background: #cc0000;
-    padding: 40px;
-    border-radius: 0;
-    max-width: 500px;
-    margin: 0 auto;
-    border: none;
-    font-family: 'Arial', sans-serif;
-}
-
-.error h3 {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
-    font-family: 'Arial', sans-serif;
-}
-
-.error p {
-    font-size: 1rem;
-    margin-bottom: 25px;
-    opacity: 0.9;
-    font-family: 'Arial', sans-serif;
-}
-
-.error button {
-    background: white;
-    color: #cc0000;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 0;
-    font-size: 1rem;
-    font-weight: 600;
+    text-align: left;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Arial', sans-serif;
 }
 
-.error button:hover {
-    transform: none;
-    box-shadow: none;
-    background: #f0f0f0;
+.station-option.is-current {
+    background: #2a220c;
+    box-shadow: inset 4px 0 0 var(--amber);
 }
 
-/* Subway icon styles - matching the circular design from the image */
-.subway-icon {
+.station-option-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.menu-lines {
+    display: flex;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.menu-bullet {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 1.4rem;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.direction {
+    flex: 0 0 auto;
+    color: #fff;
+    padding: 6px 14px;
     font-weight: 700;
-    color: white;
-    font-family: 'Arial', sans-serif;
-    margin-right: 15px;
-    flex-shrink: 0;
+    font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+    letter-spacing: 0.02em;
 }
 
-.subway-icon.large {
-    width: 75px;
-    height: 75px;
-    font-size: 2.4rem;
-    margin-right: 20px;
-    flex-shrink: 0;
+.direction-n { background: #c60c30; }
+.direction-s { background: #0039a6; }
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* Route color classes */
-.mta-red { background-color: #ee352e; }
-.mta-green { background-color: #00933c; }
-.mta-green-2 { background-color: #6cbe45; }
-.mta-blue { background-color: #0039a6; }
-.mta-orange { background-color: #ff6319; }
-.mta-brown { background-color: #996633; }
-.mta-yellow { background-color: #fccc0a; color: #000000; }
-.mta-gray { background-color: #808183; }
-.mta-purple { background-color: #b933ad; }
-
-/* Responsive design for 7" display (800x480 typical) */
-@media (max-width: 800px) {
-    .container {
-        padding: 0;
-    }
-    
-    header {
-        padding: 12px 15px 8px 15px;
-    }
-    
-    .header-content {
-        flex-direction: row;
-        gap: 10px;
-        justify-content: space-between;
-    }
-    
-    .site-logo {
-        height: 45px;
-    }
-    
-    .last-updated {
-        font-size: 0.9rem;
-    }
-    
-    .station-title-header {
-        padding: 12px 15px;
-    }
-    
-    .station-title-header h2 {
-        font-size: 2.2rem;
-    }
-    
-    .station-title-header .direction {
-        font-size: 1.2rem;
-        padding: 6px 15px;
-    }
-    
-    .content {
-        padding: 0;
-        gap: 5px;
-    }
-    
-    .main-content {
-        max-width: 100%;
-    }
-    
-    .nav-button {
-        width: 30px;
-        height: 30px;
-        font-size: 1rem;
-    }
-    
-    .nav-button-left {
-        left: 8px;
-    }
-    
-    .nav-button-right {
-        right: 8px;
-    }
-    
-    main {
-        padding: 0;
-        padding-bottom: 50px;
-    }
-    
-    .train-item {
-        padding: 20px 20px;
-        min-height: 85px;
-    }
-    
-    .header-content {
-        gap: 15px;
-    }
-    
-    .station-title-header h2 {
-        font-size: 2rem;
-    }
-    
-    .station-title-header {
-        gap: 15px;
-    }
-    
-    .temperature-display {
-        font-size: 2rem;
-    }
-    
-    .footer {
-        padding: 10px 15px;
-    }
-    
-    .last-updated {
-        font-size: 0.85rem;
-    }
-    
-    .subway-icon.large {
-        width: 65px;
-        height: 65px;
-        font-size: 2rem;
-        margin-right: 15px;
-    }
-    
-    .train-time {
-        font-size: 2rem;
-        min-width: 90px;
-    }
-    
-    .train-destination {
-        font-size: 1.5rem;
-        margin-left: 15px;
-    }
-    
-    .train-destination-secondary {
-        font-size: 1.2rem;
-        margin-left: 15px;
-    }
+.temperature {
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
-/* Extra small screens - keep large for readability */
-@media (max-width: 480px) {
-    .station-title-header h2 {
-        font-size: 1.8rem;
+.settings-button {
+    width: var(--touch);
+    height: var(--touch);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #1c1c1c;
+    border: 1px solid #3a3a3a;
+    text-decoration: none;
+}
+
+.settings-button svg {
+    width: 30px;
+    height: 30px;
+}
+
+.settings-button:active,
+.control-button:active,
+.route-bullet:active,
+.edge-button:active:not(:disabled),
+.station-option:active {
+    transform: scale(0.97);
+}
+
+.route-bullet,
+.train-bullet {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.route-bullet,
+.train-bullet {
+    height: 52px;
+    min-width: 52px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 1.35rem;
+}
+
+.route-bullet.is-dim {
+    filter: grayscale(0.4) brightness(0.45);
+}
+
+.route-bullet.express,
+.train-bullet.express {
+    border-radius: 6px;
+    transform: rotate(45deg);
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    padding: 0;
+    margin: 4px;
+}
+
+.route-bullet.express .bullet-text,
+.train-bullet.express .bullet-text {
+    transform: rotate(-45deg);
+}
+
+.bullet-text {
+    display: block;
+    line-height: 1;
+}
+
+.stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+}
+
+.edge-button {
+    flex: 0 0 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #0c0c0c;
+    color: var(--amber);
+    border: 0;
+    border-right: 1px solid #2a2a2a;
+    cursor: pointer;
+}
+
+.edge-button svg {
+    width: 52px;
+    height: 52px;
+}
+
+.edge-next {
+    border-right: 0;
+    border-left: 1px solid #2a2a2a;
+}
+
+.edge-button:disabled {
+    color: #2e2e2e;
+    cursor: default;
+}
+
+.arrivals {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.trains-list {
+    list-style: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.train-item {
+    flex: 1 1 auto;
+    min-height: 72px;
+    max-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 20px;
+    background: var(--row);
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.train-item:nth-child(even) {
+    background: #141414;
+}
+
+.train-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.train-bullet {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    font-size: 1.7rem;
+    cursor: default;
+}
+
+.train-bullet.express {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+}
+
+.train-names {
+    min-width: 0;
+}
+
+.train-destination {
+    font-size: clamp(1.25rem, 2.6vw, 2rem);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.train-destination-secondary {
+    font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+    color: #d5d5d5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.train-time {
+    flex: 0 0 auto;
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    min-width: 6ch;
+    text-align: right;
+}
+
+.message {
+    margin: auto;
+    text-align: center;
+    padding: 32px 20px;
+    max-width: 520px;
+}
+
+.message h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.message p {
+    color: var(--muted);
+    font-size: 1.15rem;
+    margin-bottom: 18px;
+}
+
+.message-error h2 { color: #ffb4b4; }
+
+.text-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 0 22px;
+    background: #fff;
+    color: #111;
+    border: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 14px;
+    border: 3px solid #333;
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.cycle-bar {
+    height: 4px;
+    background: #1c1c1c;
+    flex: 0 0 auto;
+}
+
+#cycle-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--amber);
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+
+.control-button {
+    min-height: var(--touch);
+    min-width: 120px;
+    padding: 0 18px;
+    background: #1c1c1c;
+    color: #fff;
+    border: 1px solid #3d3d3d;
+    font-size: 1.35rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.control-button:disabled {
+    color: #666;
+    cursor: default;
+}
+
+.page-indicator {
+    font-variant-numeric: tabular-nums;
+    color: #ddd;
+    white-space: nowrap;
+}
+
+.statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 16px 8px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    flex: 0 0 auto;
+}
+
+.status-note {
+    color: var(--amber);
+}
+
+.version {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+}
+
+@media (max-width: 800px), (max-height: 520px) {
+    .topbar {
+        gap: 8px;
+        padding: 6px 10px;
     }
-    
-    .station-title-header .direction {
-        font-size: 1rem;
-        padding: 5px 12px;
+
+    .site-logo { height: 36px; }
+
+    .settings-button {
+        width: 52px;
+        height: 52px;
     }
-    
-    .subway-icon.large {
-        width: 65px;
-        height: 65px;
-        font-size: 2rem;
-        margin-right: 15px;
+
+    .station-button {
+        min-height: 48px;
+        font-size: clamp(1.15rem, 3vw, 1.7rem);
     }
-    
-    .train-time {
-        font-size: 2rem;
-        min-width: 90px;
+
+    .station-option {
+        min-height: 56px;
+        font-size: 1.05rem;
     }
-    
-    .train-destination {
-        font-size: 1.5rem;
-        margin-left: 12px;
+
+    .edge-button {
+        flex-basis: 64px;
     }
-    
-    .train-destination-secondary {
-        font-size: 1.1rem;
-        margin-left: 12px;
+
+    .edge-button svg {
+        width: 44px;
+        height: 44px;
     }
-    
+
+    .route-bullet {
+        height: 48px;
+        min-width: 48px;
+    }
+
+    .trains-list {
+        overflow: hidden;
+    }
+
     .train-item {
-        padding: 25px 20px;
-        min-height: 90px;
+        flex: 1 1 0;
+        min-height: 0;
+        max-height: none;
+        padding: 2px 12px;
     }
-    
-    .nav-button {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
+
+    .train-bullet {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        font-size: 1.15rem;
     }
-    
-    .nav-button-left {
-        left: 5px;
-    }
-    
-    .nav-button-right {
-        right: 5px;
-    }
-    
-    main {
-        padding: 0;
-        padding-bottom: 45px;
-    }
-    
-    .train-item {
-        padding: 18px 18px;
-        min-height: 80px;
-    }
-    
-    .header-content {
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    
-    .header-left,
-    .header-center,
-    .header-right {
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-    
-    .station-title-header h2 {
-        font-size: 1.8rem;
-    }
-    
-    .station-title-header {
-        gap: 12px;
-    }
-    
-    .temperature-display {
-        font-size: 1.8rem;
-    }
-    
-    .footer {
-        padding: 8px 12px;
-    }
-    
-    .last-updated {
+
+    .page-indicator {
         font-size: 0.8rem;
     }
-    
-    .subway-icon.large {
-        width: 60px;
-        height: 60px;
-        font-size: 1.8rem;
-        margin-right: 12px;
-    }
-    
-    .train-time {
-        font-size: 1.8rem;
-        min-width: 80px;
-    }
-    
-    .train-destination {
-        font-size: 1.3rem;
-        margin-left: 12px;
-    }
-    
-    .train-destination-secondary {
-        font-size: 1rem;
-        margin-left: 12px;
+}
+
+@media (max-width: 640px) {
+    .station-block {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
     }
 }

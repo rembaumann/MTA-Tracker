@@ -1,0 +1,9 @@
+[Unit]
+Description=Update MTA Tracker from git
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=@APP_DIR@
+ExecStart=@APP_DIR@/update.sh

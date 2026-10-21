@@ -2,7 +2,18 @@
 
 If the temperature is not showing up, follow these steps to debug:
 
-## Step 1: Verify Environment Variable is Set
+The key belongs in `.env` (see `.env.example`), not in `app.py`. `/api/debug/weather` reports whether a key is set. It does not return the key.
+
+## Step 1: Verify the key is set
+
+```bash
+# from the repo, after copying .env.example to .env
+grep OPENWEATHER_API_KEY .env
+```
+
+You can still export it in the shell instead. A value already in the environment wins over `.env`.
+
+## Shell export (alternative)
 
 **Check if the variable is set:**
 ```bash

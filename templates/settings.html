@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mta-version" content="{{ version }}">
+    <title>Settings · MTA Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v={{ version }}">
+</head>
+<body>
+    <div class="settings">
+        <header class="settings-top">
+            <a class="control-button settings-back" href="/">‹ Board</a>
+            <h1>Stations</h1>
+            <button type="button" id="save" class="control-button control-save">Save</button>
+        </header>
+
+        <p id="banner" class="banner" hidden></p>
+
+        <section class="panel">
+            <div class="panel-head">
+                <h2>On the board</h2>
+                <p>These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.</p>
+            </div>
+            <div id="selected-list" class="selected-list"></div>
+        </section>
+
+        <section class="panel">
+            <label class="search-label" for="search">Add a station</label>
+            <input id="search" class="search" type="search" placeholder="Search by name or line, such as Union Sq or Q" autocomplete="off" enterkeyhint="search">
+            <div id="results" class="results"></div>
+        </section>
+
+        <section class="panel display-options">
+            <h2>Display</h2>
+            <div class="option-grid">
+                <label>Minutes ahead
+                    <input id="lookahead" type="number" min="5" max="60" inputmode="numeric">
+                </label>
+                <label>Trains per page
+                    <input id="per-page" type="number" min="3" max="8" inputmode="numeric">
+                </label>
+                <label>Seconds on each page
+                    <input id="cycle" type="number" min="5" max="120" inputmode="numeric">
+                </label>
+                <label>Weather ZIP
+                    <input id="zip" type="text" inputmode="numeric" maxlength="5" pattern="[0-9]{5}">
+                </label>
+            </div>
+        </section>
+
+        <footer class="statusbar">
+            <span id="save-note">Changes apply on the board after you save.</span>
+            <span class="version" id="app-version" title="Running version"></span>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/version.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/settings.js') }}?v={{ version }}"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "lookahead_minutes": 20,
+  "trains_per_page": 5,
+  "cycle_seconds": 10,
+  "zip_code": "10010",
+  "stations": [
+    {
+      "id": "635",
+      "directions": ["N", "S"],
+      "routes": ["4", "5", "6", "6X"]
+    },
+    {
+      "id": "R20",
+      "directions": ["N", "S"],
+      "routes": ["N", "Q", "R", "W"]
+    },
+    {
+      "id": "L03",
+      "directions": ["N", "S"],
+      "routes": ["L"]
+    },
+    {
+      "id": "634",
+      "directions": ["N", "S"],
+      "routes": ["4", "6", "6X"]
+    },
+    {
+      "id": "R19",
+      "directions": ["N", "S"],
+      "routes": ["N", "Q", "R", "W"]
+    }
+  ]
+}

@@ -16,7 +16,24 @@ The MTA Tracker now displays the current temperature in the top right corner. To
 
 ## Setting Up the API Key
 
-### Option 1: Environment Variable (Recommended)
+The subway feeds do not use this key. Only the temperature does.
+
+### Option 1: `.env` in the repo (recommended)
+
+```bash
+cp .env.example .env
+# edit .env and set OPENWEATHER_API_KEY
+```
+
+`.env` is gitignored. On the Pi, `mta-tracker.service` loads it. Restart after a change:
+
+```bash
+sudo systemctl restart mta-tracker.service
+```
+
+The ZIP code is not in `.env`. Change "Weather ZIP" on the settings page. It is stored in `config.json`.
+
+### Option 2: Environment variable
 
 **On your development machine:**
 ```bash
@@ -35,7 +52,9 @@ echo 'export OPENWEATHER_API_KEY="your_api_key_here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Option 2: Update systemd Service
+### Option 3: systemd Environment line
+
+Prefer `.env`. The service already loads that file. Use a direct `Environment=` line only if you are not using `.env`.
 
 Edit `/etc/systemd/system/mta-tracker.service`:
 ```ini

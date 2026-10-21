@@ -1,204 +1,156 @@
 # MTA Tracker
 
-A real-time subway arrival tracker for New York City MTA stations, built with Flask and styled to mimic the classic subway board aesthetic.
+A real-time New York City subway board for a wall display. It runs as a Flask app, reads the public MTA GTFS-RT feeds, and is meant to boot full screen on a Raspberry Pi.
+
+Out of the box it shows 14 St-Union Sq and 23 St, the same stations the original kiosk used. Any other station, direction, and line can be chosen from the settings screen. Choices are stored in `config.json`, which is gitignored.
 
 ## Features
 
-- **Real-time Data**: Fetches live train arrival times from MTA's GTFS Realtime API
-- **Subway Board Style**: Clean, dark interface inspired by actual MTA subway displays
-- **Multiple Stations**: Monitors 14 St-Union Sq and 23 St stations
-- **All Subway Lines**: Supports 4, 5, 6, L, N, Q, R, and W trains
-- **Platform-Specific**: Separates trains by actual platform/station ID for accuracy
-- **L Train Special Handling**: Uses geographic direction names (Manhattan Bound/Brooklyn Bound)
-- **Pagination**: Shows 5 trains per page with manual navigation controls
-- **Auto-Cycling**: Automatically cycles through all station/direction combinations
-- **Destination Display**: Shows final destination for each train
+- Live arrivals from the MTA GTFS-RT feeds
+- Every subway station in the bundled GTFS static data, with search
+- Per-station choice of directions and lines
+- Touch-friendly line filter on the board, alongside auto-cycling
+- Large previous, next, and pause controls
+- Optional temperature from OpenWeatherMap
+- The running git commit in the corner. The page reloads itself when an update changes it
 
-## Screenshots
+## Run it locally
 
-The app displays train arrivals in a subway board style with:
-- Station name and direction badges
-- Train route icons with MTA colors
-- Arrival times (NOW, 1 MIN, X MIN format)
-- Final destinations
-- Manual navigation arrows
-- Progress indicator
+Python 3.9 or newer.
 
-## Installation
-
-### Prerequisites
-
-- Python 3.7+
-- MTA API key (free from [MTA Developer Resources](https://api.mta.info/))
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd MTA-Tracker
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Get MTA API Key**
-   - Visit [MTA Developer Resources](https://api.mta.info/)
-   - Sign up for a free API key
-   - Replace `YOUR_API_KEY_HERE` in `app.py` with your actual key
-
-4. **Download GTFS Static Data**
-   - The app includes GTFS static data files in the `gtfs_subway/` directory
-   - These files are used for station names and trip destinations
-
-5. **Run the application**
-   ```bash
-   python3 app.py
-   ```
-
-6. **Access the app**
-   - Open your browser to `http://localhost:5001`
-
-## Configuration
-
-### Monitored Stations
-
-The app currently monitors these station IDs:
-- **14 St-Union Sq**: 635N/635S (4/5/6 trains), R20N/R20S (N/Q/R/W trains), L03N/L03S (L trains)
-- **23 St**: 634N/634S (4/5/6 trains), R19N/R19S (N/Q/R/W trains)
-
-### API Endpoints
-
-The app fetches data from these MTA feeds:
-- `gtfs-456` - 4, 5, 6 trains
-- `gtfs-nqrw` - N, Q, R, W trains  
-- `gtfs-l` - L trains
-
-## Project Structure
-
-```
-MTA Tracker/
-├── app.py                 # Main Flask application
-├── main.py               # Original script (legacy)
-├── requirements.txt      # Python dependencies
-├── templates/
-│   └── index.html       # Web interface template
-├── static/
-│   └── css/
-│       ├── style.css    # Main stylesheet
-│       └── subway-icons.css  # Subway line icons
-└── gtfs_subway/         # GTFS static data files
-    ├── stops.txt        # Station information
-    ├── trips.txt        # Trip headsigns
-    └── ...              # Other GTFS files
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
 ```
 
-## Key Features Explained
+Open http://localhost:5001. Settings are at http://localhost:5001/settings.
 
-### Station ID Grouping
-Trains are grouped by their actual station ID rather than station name, ensuring that different subway lines at the same physical station are displayed separately. This provides more accurate platform-specific information.
+No MTA API key is required. The subway GTFS-RT feeds are public. A keyless GET to `https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs` returns the protobuf feed (checked 2026-10-21). The slash in that path has to stay percent-encoded (`%2F`). A decoded slash is rejected with 403.
 
-### L Train Direction Mapping
-L trains use geographic direction names:
-- Northbound → "Manhattan Bound" 
-- Southbound → "Brooklyn Bound"
+The temperature is optional. Copy `.env.example` to `.env` and set `OPENWEATHER_API_KEY`. `.env` is gitignored. If `MTA_API_KEY` is set there, it is sent as the `x-api-key` header, but the feeds work without it.
 
-### Destination Lookup
-The app uses a two-tier lookup system for train destinations:
-1. **Trip ID lookup**: Matches real-time trip IDs to static trip headsigns
-2. **Route + Direction fallback**: Uses route ID and direction ID when trip ID doesn't match
+## Choose stations
 
-### Pagination System
-- Shows 5 trains per page
-- Manual navigation with left/right arrows
-- Auto-cycling through all pages every 10 seconds
-- Manual navigation pauses auto-cycling for 3 seconds
+Use the gear on the board, or open `/settings`.
 
-## API Response Format
+1. Search by station name, or by a line such as `Q` or `6`.
+2. Add a station. It starts with both directions and every line that stops there.
+3. Turn directions and line bullets on or off. Reorder with the arrows.
+4. Save. The board picks up the change on the next refresh.
 
-The `/api/data` endpoint returns:
+The same choices live in `config.json`. `config.example.json` is the default used when `config.json` does not exist yet, so a fresh clone still shows trains. `install-pi.sh` copies the example to `config.json` once and will not overwrite it later.
+
 ```json
 {
-  "data": [
-    {
-      "station": "14 St-Union Sq",
-      "station_id": "635N", 
-      "direction": "Northbound",
-      "line_type": "Other Lines",
-      "page": 1,
-      "total_pages": 2,
-      "trains": [
-        {
-          "route": "6",
-          "minutes": 2.5,
-          "destination": "Pelham Bay Park"
-        }
-      ]
-    }
-  ],
-  "last_updated": "2025-01-16T20:30:45Z"
+  "lookahead_minutes": 20,
+  "trains_per_page": 5,
+  "cycle_seconds": 10,
+  "zip_code": "10010",
+  "stations": [
+    {"id": "635", "directions": ["N", "S"], "routes": ["4", "5", "6", "6X"]}
+  ]
 }
+```
+
+`id` is the parent stop id from `gtfs_subway/stops.txt` (`635`, not `635N`). Directions are `N` and `S`. Routes are GTFS route ids, so the express `6X` is separate from the `6`.
+
+The default stations are:
+
+| Stop id | Station | Lines |
+| --- | --- | --- |
+| 635 | 14 St-Union Sq | 4, 5, 6, 6X |
+| R20 | 14 St-Union Sq | N, Q, R, W |
+| L03 | 14 St-Union Sq | L |
+| 634 | 23 St | 4, 6, 6X |
+| R19 | 23 St | N, Q, R, W |
+
+Stations that share a name are separate stops. The line bullets are how you tell the Lexington 23 St from the Broadway 23 St.
+
+## The board
+
+The board cycles through each saved station, direction, and page. The arrows on the left and right edges move backward and forward. A tap holds that position for 20 seconds, then cycling resumes. Tap the station name to open the stations saved in settings and jump to one. A line turned off for a station in settings does not appear on the board.
+
+Arrivals are grouped by platform. The L says Manhattan or Brooklyn. The 7 says Queens or Manhattan. Most other lines say Uptown or Downtown.
+
+## Raspberry Pi
+
+The Pi steps are in [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md). On the Pi, from the clone:
+
+```bash
+cd /home/rem/mta-tracker
+./install-pi.sh
+sudo reboot
+```
+
+`install-pi.sh` detects the user and the repo path. It does not assume `pi` or `/home/pi`. That assumption is why an older unit failed with `status=217/USER`.
+
+Update later with:
+
+```bash
+cd /home/rem/mta-tracker
+./update.sh
+```
+
+`update.sh` fast-forwards git, reinstalls requirements when that file changed, and restarts the service. The browser polls `/version` (the short git commit) and reloads when it changes. A systemd timer runs the same script about every six hours. Disable it with `sudo systemctl disable --now mta-tracker-update.timer`.
+
+## API
+
+- `GET /api/data` — groups of arrivals, the configured lines, and the running version
+- `GET /api/stations` — every station, with lines and direction labels
+- `GET /api/config` and `POST /api/config` — read or replace the settings
+- `GET /version` — `{"version": "<short sha>"}`
+- `GET /api/temperature` — temperature, or null when no weather key is set
+
+## Project layout
+
+```
+app.py                     Flask app and feed parser
+config_store.py            config.json, .env, running version
+gtfs_catalog.py            stations and lines from gtfs_subway/
+config.example.json        default stations
+.env.example               optional API keys
+templates/                 board and settings
+static/                    CSS and JavaScript
+install-pi.sh              venv, systemd, labwc kiosk
+update.sh                  pull, restart, let the browser reload
+kiosk.sh                   Chromium on Wayland, X11 fallback
+mta-tracker.service.in    service template, filled in by the installer
+tests/test_board.py
+gtfs_subway/               static GTFS
 ```
 
 ## Development
 
-### Adding New Stations
+```bash
+python -m unittest tests.test_board
+```
 
-To monitor additional stations:
+The tests use the bundled GTFS and a fake realtime message. They do not call the MTA.
 
-1. Find the station IDs in `gtfs_subway/stops.txt`
-2. Add the station IDs to the filter in `app.py`:
-   ```python
-   if stop_id in ["634N", "634S", "635N", "635S", "L03N", "L03S", "R19N", "R19S", "R20N", "R20S", "NEW_STATION_ID"]:
-   ```
+Feeds used, one per group of lines:
 
-### Customizing Display
+| Feed | Lines |
+| --- | --- |
+| `nyct%2Fgtfs` | 1–7, 6X, 7X, 42 St Shuttle |
+| `nyct%2Fgtfs-ace` | A, C, E, Rockaway Shuttle |
+| `nyct%2Fgtfs-bdfm` | B, D, F, M, Franklin Shuttle |
+| `nyct%2Fgtfs-g` | G |
+| `nyct%2Fgtfs-jz` | J, Z |
+| `nyct%2Fgtfs-l` | L |
+| `nyct%2Fgtfs-nqrw` | N, Q, R, W |
+| `nyct%2Fgtfs-si` | Staten Island Railway |
 
-- **Colors**: Modify CSS classes in `static/css/style.css`
-- **Layout**: Update HTML structure in `templates/index.html`
-- **Timing**: Adjust `CYCLE_DURATION` and pagination settings in the JavaScript
+Only the feeds for the lines you selected are downloaded.
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **No trains showing**: Check your MTA API key and internet connection
-2. **Missing destinations**: Some trains may not have destination data in the static feed
-3. **Port already in use**: Change the port in `app.py` or kill existing processes
-
-### Debug Mode
-
-The app includes debug logging for troubleshooting:
-- Trip ID lookups
-- Route + direction fallbacks
-- Data loading statistics
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- **No trains:** the station may be quiet inside the lookahead window. Raise "Minutes ahead" in settings, or confirm the Pi can reach `api-endpoint.mta.info`.
+- **Temperature missing:** set `OPENWEATHER_API_KEY` in `.env` and restart. See [WEATHER_SETUP.md](WEATHER_SETUP.md).
+- **Port in use:** the app listens on `5001`.
+- **Pi service failed with 217/USER:** the unit still says `User=pi`. Run `./install-pi.sh` again so it writes the real username.
 
 ## License
 
-This project is open source and available under the MIT License.
-
-## Acknowledgments
-
-- MTA for providing the GTFS Realtime API
-- NYC Subway for the inspiration and data
-- Flask and Python community for excellent tools
-
-## Future Enhancements
-
-- [ ] Add more stations
-- [ ] Service alerts integration
-- [ ] Mobile-responsive design improvements
-- [ ] Historical data tracking
-- [ ] Push notifications
-- [ ] Multi-language support
-- [x] GitHub repository setup and documentation
+MIT.
