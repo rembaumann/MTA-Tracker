@@ -10,11 +10,6 @@
 <body class="board-page">
     <div class="board">
         <header class="topbar">
-            <div class="brand">
-                <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="" class="site-logo"
-                     onerror="this.hidden=true; document.getElementById('brand-fallback').hidden=false;">
-                <span id="brand-fallback" class="brand-fallback" hidden>MTA</span>
-            </div>
             <div class="station-block">
                 <h1 class="station-heading">
                     <button type="button" id="station-button" class="station-button" aria-haspopup="listbox" aria-expanded="false" aria-controls="station-menu">
@@ -27,25 +22,9 @@
                 <span id="direction" class="direction" hidden></span>
                 <div id="station-menu" class="station-dropdown" role="listbox" hidden></div>
             </div>
-            <div class="top-actions">
-                <div class="temperature" id="temperature-wrap" hidden>
-                    <span id="temperature">--</span>°
-                </div>
-                <a class="settings-button" href="/settings" aria-label="Settings">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path fill="currentColor" d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.16 7.16 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.16 7.16 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
-                    </svg>
-                </a>
-            </div>
         </header>
 
-        <div class="stage">
-            <button type="button" id="prev-page" class="edge-button" aria-label="Previous" disabled>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill="currentColor" d="M15.7 3.3 7.2 12l8.5 8.7 2.2-2.2L11.6 12l6.3-6.5z"/>
-                </svg>
-            </button>
-            <main class="arrivals">
+        <main class="arrivals">
             <div id="loading" class="message">
                 <div class="spinner"></div>
                 <p>Loading trains…</p>
@@ -61,21 +40,44 @@
                 <button type="button" id="retry" class="text-button">Retry</button>
             </div>
             <ol id="trains-list" class="trains-list" hidden></ol>
-            </main>
-            <button type="button" id="next-page" class="edge-button edge-next" aria-label="Next" disabled>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill="currentColor" d="M8.3 3.3 16.8 12l-8.5 8.7-2.2-2.2L12.4 12 6.1 5.5z"/>
-                </svg>
-            </button>
-        </div>
+        </main>
 
         <div class="cycle-bar" aria-hidden="true"><div id="cycle-bar-fill"></div></div>
 
-        <footer class="statusbar">
-            <span>Updated <time id="last-updated">--</time></span>
-            <span class="page-indicator" id="page-indicator"></span>
-            <span class="status-note" id="status-note"></span>
-            <span class="version" id="app-version" title="Running version"></span>
+        <footer class="board-footer">
+            <div class="footer-side">
+                <button type="button" id="prev-page" class="nav-button" aria-label="Previous" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M15.7 3.3 7.2 12l8.5 8.7 2.2-2.2L11.6 12l6.3-6.5z"/>
+                    </svg>
+                </button>
+                <div class="brand">
+                    <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="" class="site-logo"
+                         onerror="this.hidden=true; document.getElementById('brand-fallback').hidden=false;">
+                    <span id="brand-fallback" class="brand-fallback" hidden>MTA</span>
+                </div>
+            </div>
+            <div class="footer-status">
+                <span>Updated <time id="last-updated">--</time></span>
+                <span class="page-indicator" id="page-indicator"></span>
+                <span class="status-note" id="status-note"></span>
+                <span class="version" id="app-version" title="Running version"></span>
+            </div>
+            <div class="footer-side footer-side-end">
+                <div class="temperature" id="temperature-wrap" hidden>
+                    <span id="temperature">--</span>°
+                </div>
+                <a class="nav-button" href="/settings" aria-label="Settings">
+                    <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.16 7.16 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.16 7.16 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+                    </svg>
+                </a>
+                <button type="button" id="next-page" class="nav-button" aria-label="Next" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M8.3 3.3 16.8 12l-8.5 8.7-2.2-2.2L12.4 12 6.1 5.5z"/>
+                    </svg>
+                </button>
+            </div>
         </footer>
     </div>
     <script src="{{ url_for('static', filename='js/version.js') }}?v={{ version }}"></script>

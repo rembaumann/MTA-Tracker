@@ -96,19 +96,31 @@
         bullet.title = route.name || route.short;
         var text = document.createElement("span");
         text.className = "bullet-text";
-        text.textContent = className === "train-bullet" ? route.short : bulletLabel(route, state.routes);
+        if (className === "train-bullet") {
+            text.textContent = route.express ? route.short.replace(/X$/, "") : route.short;
+        } else {
+            text.textContent = bulletLabel(route, state.routes);
+        }
         bullet.appendChild(text);
         return bullet;
     }
 
-    function formatMinutes(minutes) {
+    function makeTime(minutes) {
+        var time = document.createElement("div");
+        time.className = "train-time";
+        var value = document.createElement("span");
+        value.className = "train-time-value";
+        time.appendChild(value);
         if (minutes < 1) {
-            return "NOW";
+            value.textContent = "NOW";
+            return time;
         }
-        if (minutes < 2) {
-            return "1 MIN";
-        }
-        return Math.round(minutes) + " MIN";
+        value.textContent = minutes < 2 ? "1" : String(Math.round(minutes));
+        var unit = document.createElement("span");
+        unit.className = "train-time-unit";
+        unit.textContent = "MIN";
+        time.appendChild(unit);
+        return time;
     }
 
     function splitDestination(destination) {
@@ -271,11 +283,19 @@
         direction.className = "direction direction-" + String(section.direction_id).toLowerCase();
 
         trainsList.innerHTML = "";
-        section.trains.forEach(function (train) {
+        trainsList.style.setProperty("--rows", state.perPage);
+        section.trains.forEach(function (train, index) {
             var route = routeById(train.route);
             var dest = splitDestination(train.destination);
             var item = document.createElement("li");
             item.className = "train-item";
+
+            var position = document.createElement("div");
+            position.className = "train-position";
+            position.textContent = (section.page - 1) * state.perPage + index + 1;
+
+            var panel = document.createElement("div");
+            panel.className = "train-panel";
 
             var identity = document.createElement("div");
             identity.className = "train-identity";
@@ -297,12 +317,10 @@
             }
             identity.appendChild(names);
 
-            var time = document.createElement("div");
-            time.className = "train-time";
-            time.textContent = formatMinutes(train.minutes);
-
-            item.appendChild(identity);
-            item.appendChild(time);
+            panel.appendChild(identity);
+            panel.appendChild(makeTime(train.minutes));
+            item.appendChild(position);
+            item.appendChild(panel);
             trainsList.appendChild(item);
         });
 

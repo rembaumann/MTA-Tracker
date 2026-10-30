@@ -1,7 +1,7 @@
 :root {
     --bg: #000000;
     --panel: #121212;
-    --row: #1a1a1a;
+    --row: #333333;
     --line: #2c2c2c;
     --amber: #f0b323;
     --muted: #9b9b9b;
@@ -46,7 +46,7 @@ button {
 
 .topbar {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: 16px;
     padding: 10px 16px;
@@ -199,12 +199,6 @@ button {
 .direction-n { background: #c60c30; }
 .direction-s { background: #0039a6; }
 
-.top-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .temperature {
     font-size: clamp(1.4rem, 2.4vw, 2rem);
     font-weight: 700;
@@ -212,27 +206,40 @@ button {
     white-space: nowrap;
 }
 
-.settings-button {
-    width: var(--touch);
-    height: var(--touch);
+.nav-button {
+    width: 72px;
+    height: 62px;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    padding: 0;
+    color: var(--amber);
     background: #1c1c1c;
     border: 1px solid #3a3a3a;
     text-decoration: none;
+    cursor: pointer;
 }
 
-.settings-button svg {
-    width: 30px;
-    height: 30px;
+.nav-button svg {
+    width: 44px;
+    height: 44px;
 }
 
-.settings-button:active,
+.nav-button .settings-icon {
+    width: 32px;
+    height: 32px;
+    color: #fff;
+}
+
+.nav-button:disabled {
+    color: #2e2e2e;
+    cursor: default;
+}
+
 .control-button:active,
 .route-bullet:active,
-.edge-button:active:not(:disabled),
+.nav-button:active:not(:disabled),
 .station-option:active {
     transform: scale(0.97);
 }
@@ -282,44 +289,6 @@ button {
     line-height: 1;
 }
 
-.stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    position: relative;
-    z-index: 1;
-}
-
-.edge-button {
-    flex: 0 0 76px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    background: #0c0c0c;
-    color: var(--amber);
-    border: 0;
-    border-right: 1px solid #2a2a2a;
-    cursor: pointer;
-}
-
-.edge-button svg {
-    width: 52px;
-    height: 52px;
-}
-
-.edge-next {
-    border-right: 0;
-    border-left: 1px solid #2a2a2a;
-}
-
-.edge-button:disabled {
-    color: #2e2e2e;
-    cursor: default;
-}
-
 .arrivals {
     flex: 1 1 auto;
     min-width: 0;
@@ -327,32 +296,46 @@ button {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .trains-list {
     list-style: none;
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: repeat(var(--rows, 5), minmax(0, 1fr));
+    row-gap: 4px;
+    padding-top: 4px;
 }
 
 .train-item {
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+}
+
+.train-position {
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.train-panel {
     flex: 1 1 auto;
-    min-height: 72px;
-    max-height: 140px;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 8px 20px;
+    padding: 0 20px 0 8px;
     background: var(--row);
-    border-bottom: 1px solid #2a2a2a;
-}
-
-.train-item:nth-child(even) {
-    background: #141414;
 }
 
 .train-identity {
@@ -363,17 +346,22 @@ button {
 }
 
 .train-bullet {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    font-size: 1.7rem;
+    --bullet: 64px;
+    width: var(--bullet);
+    height: var(--bullet);
+    min-width: var(--bullet);
+    padding: 0;
+    font-size: 1.9rem;
     cursor: default;
 }
 
+/* Rotated square: 0.72 side keeps the diamond's diagonal close to the circle's diameter */
 .train-bullet.express {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
+    width: calc(var(--bullet) * 0.72);
+    height: calc(var(--bullet) * 0.72);
+    min-width: calc(var(--bullet) * 0.72);
+    margin: calc(var(--bullet) * 0.14);
+    font-size: 1.6rem;
 }
 
 .train-names {
@@ -398,12 +386,24 @@ button {
 
 .train-time {
     flex: 0 0 auto;
-    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.train-time-value {
+    font-size: clamp(2rem, 4vw, 2.8rem);
     letter-spacing: -0.03em;
-    min-width: 6ch;
-    text-align: right;
+}
+
+.train-time-unit {
+    margin-top: 2px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
 }
 
 .message {
@@ -503,6 +503,40 @@ button {
     flex: 0 0 auto;
 }
 
+.board-footer {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    flex: 0 0 auto;
+}
+
+.footer-side {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-side-end {
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.footer-side-end .temperature {
+    margin-right: 8px;
+    color: var(--text);
+}
+
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
 .status-note {
     color: var(--amber);
 }
@@ -519,13 +553,6 @@ button {
         padding: 6px 10px;
     }
 
-    .site-logo { height: 36px; }
-
-    .settings-button {
-        width: 52px;
-        height: 52px;
-    }
-
     .station-button {
         min-height: 48px;
         font-size: clamp(1.15rem, 3vw, 1.7rem);
@@ -536,36 +563,31 @@ button {
         font-size: 1.05rem;
     }
 
-    .edge-button {
-        flex-basis: 64px;
-    }
-
-    .edge-button svg {
-        width: 44px;
-        height: 44px;
-    }
-
     .route-bullet {
         height: 48px;
         min-width: 48px;
     }
 
-    .trains-list {
-        overflow: hidden;
+    .train-panel {
+        padding: 0 12px 0 6px;
     }
 
-    .train-item {
-        flex: 1 1 0;
-        min-height: 0;
-        max-height: none;
-        padding: 2px 12px;
+    .train-position {
+        flex-basis: 40px;
+        font-size: 1.6rem;
     }
 
     .train-bullet {
-        width: 42px;
-        height: 42px;
-        min-width: 42px;
-        font-size: 1.15rem;
+        --bullet: 54px;
+        font-size: 1.7rem;
+    }
+
+    .train-bullet.express {
+        font-size: 1.4rem;
+    }
+
+    .train-time-value {
+        font-size: 2.4rem;
     }
 
     .page-indicator {
