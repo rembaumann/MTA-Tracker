@@ -207,8 +207,8 @@ button {
 }
 
 .nav-button {
-    width: 72px;
-    height: 62px;
+    width: 64px;
+    height: 52px;
     flex: 0 0 auto;
     display: flex;
     align-items: center;
@@ -222,13 +222,13 @@ button {
 }
 
 .nav-button svg {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
 }
 
 .nav-button .settings-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     color: #fff;
 }
 
