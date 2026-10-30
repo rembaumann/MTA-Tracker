@@ -229,12 +229,35 @@
         nextButton.disabled = !enabled;
     }
 
+    function showHeader(label, stationId) {
+        stationButton.setAttribute("aria-label", label);
+        stationName.replaceChildren();
+        stationName.dataset.label = label;
+        if (!stationId) {
+            stationName.textContent = label;
+            return;
+        }
+        var img = document.createElement("img");
+        img.className = "station-tablet";
+        img.alt = "";
+        var version = document.querySelector('meta[name="mta-version"]');
+        var suffix = version && version.content ? "?v=" + encodeURIComponent(version.content) : "";
+        img.src = "/tablets/" + encodeURIComponent(stationId) + ".png" + suffix;
+        img.addEventListener("error", function () {
+            if (stationName.dataset.label !== label) {
+                return;
+            }
+            stationName.textContent = label;
+        });
+        stationName.appendChild(img);
+    }
+
     function renderPinned() {
         loading.hidden = true;
         errorBox.hidden = true;
         trainsList.hidden = true;
         empty.hidden = false;
-        stationName.textContent = state.pinned.name;
+        showHeader(state.pinned.name, state.pinned.id);
         direction.hidden = true;
         setEmptyCopy("No upcoming trains", "Nothing is due at this station in the current window.");
         pageIndicator.textContent = state.holding ? "Holding" : "";
@@ -268,7 +291,7 @@
         setArrows();
 
         if (!hasSections) {
-            stationName.textContent = "No trains";
+            showHeader("No trains");
             direction.hidden = true;
             pageIndicator.textContent = "";
             stopCycleBar();
@@ -278,7 +301,7 @@
         }
 
         var section = state.sections[state.index];
-        stationName.textContent = section.station;
+        showHeader(section.station, section.parent_id);
         direction.hidden = false;
         direction.textContent = section.direction;
         direction.className = "direction direction-" + String(section.direction_id).toLowerCase();
@@ -424,7 +447,7 @@
         trainsList.hidden = true;
         errorBox.hidden = false;
         document.getElementById("error-body").textContent = message;
-        stationName.textContent = "MTA Tracker";
+        showHeader("MTA Tracker");
         direction.hidden = true;
         setArrows();
     }

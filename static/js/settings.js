@@ -238,7 +238,7 @@
 
     function payload() {
         return {
-            lookahead_minutes: Number(document.getElementById("lookahead").value),
+            trains_ahead: Number(document.getElementById("trains-ahead").value),
             trains_per_page: Number(document.getElementById("per-page").value),
             cycle_seconds: Number(document.getElementById("cycle").value),
             zip_code: document.getElementById("zip").value.trim(),
@@ -296,7 +296,7 @@
                     routes: station.routes.slice()
                 };
             });
-            document.getElementById("lookahead").value = config.lookahead_minutes;
+            document.getElementById("trains-ahead").value = config.trains_ahead;
             document.getElementById("per-page").value = config.trains_per_page;
             document.getElementById("cycle").value = config.cycle_seconds;
             document.getElementById("zip").value = config.zip_code;

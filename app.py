@@ -7,12 +7,13 @@ API key. Optional secrets live in .env.
 
 import csv
 import os
+import re
 import threading
 from collections import Counter
 from datetime import datetime, timezone
 
 import requests
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from google.transit import gtfs_realtime_pb2
 
 from config_store import (
@@ -34,6 +35,8 @@ from gtfs_catalog import (
 load_dotenv()
 
 app = Flask(__name__)
+TABLET_DIR = os.path.join(os.path.dirname(__file__), "design", "tablets")
+TABLET_ID = re.compile(r"^[A-Z0-9]{2,4}$")
 
 latest_data = {
     "groups": [],
@@ -205,7 +208,7 @@ def collect_arrivals(
         else headsign_by_route_direction
     )
     by_platform = trips_headsign_by_platform if headsign_by_platform is None else headsign_by_platform
-    lookahead = config["lookahead_minutes"]
+    limit = config["trains_ahead"]
     platforms = platforms_for_config(config)
     grouped = {stop_id: [] for stop_id in platforms}
     seen = set()
@@ -234,7 +237,7 @@ def collect_arrivals(
                     continue
                 arrival = datetime.fromtimestamp(event.time, tz=timezone.utc)
                 minutes = (arrival - now).total_seconds() / 60
-                if minutes < 0 or minutes > lookahead:
+                if minutes < 0:
                     continue
                 dedupe_key = (trip.trip_id, stop_id)
                 if dedupe_key in seen:
@@ -252,6 +255,7 @@ def collect_arrivals(
         if not trains:
             continue
         trains.sort(key=lambda train: train["minutes"])
+        trains = trains[:limit]
         parent_id = stop_id[:-1]
         direction_id = stop_id[-1]
         route_ids = [train["route"] for train in trains]
@@ -399,6 +403,17 @@ def disable_cache(response):
 @app.route("/")
 def index():
     return render_template("index.html", version=VERSION)
+
+
+@app.route("/tablets/<station_id>.png")
+def station_tablet(station_id):
+    """Mosaic name tablet for a GTFS parent station id."""
+    if not TABLET_ID.match(station_id):
+        return ("", 404)
+    path = os.path.join(TABLET_DIR, f"{station_id}.png")
+    if not os.path.isfile(path):
+        return ("", 404)
+    return send_from_directory(TABLET_DIR, f"{station_id}.png")
 
 
 @app.route("/settings")

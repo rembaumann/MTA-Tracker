@@ -1,5 +1,5 @@
 {
-  "lookahead_minutes": 20,
+  "trains_ahead": 5,
   "trains_per_page": 5,
   "cycle_seconds": 10,
   "zip_code": "10010",
