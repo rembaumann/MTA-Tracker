@@ -34,8 +34,8 @@ header {
 }
 
 .header-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
@@ -43,14 +43,8 @@ header {
     gap: 20px;
 }
 
-.header-left {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-}
-
 .header-center {
-    flex: 1;
+    grid-column: 2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -58,14 +52,8 @@ header {
     flex-wrap: wrap;
 }
 
-.header-right {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-}
-
 .site-logo {
-    height: 60px;
+    height: 48px;
     width: auto;
     max-width: 200px;
     object-fit: contain;
@@ -96,16 +84,32 @@ header h1 {
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
     background: #000000;
-    padding: 12px 20px;
+    padding: 6px 10px;
     border-top: 1px solid #333333;
     text-align: center;
-    z-index: 100;
     flex-shrink: 0;
+}
+
+.footer-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-right .temperature-display {
+    margin-right: 8px;
 }
 
 .last-updated {
@@ -122,7 +126,7 @@ main {
     align-items: stretch;
     justify-content: center;
     background: #000000;
-    padding: 5px 0 50px 0; /* 5px top padding below dividing line, 50px bottom for footer */
+    padding: 5px 0 0 0;
     overflow: hidden;
     min-height: 0; /* Allow flex child to shrink */
 }
@@ -134,12 +138,10 @@ main {
     padding: 0;
     box-shadow: none;
     width: 100%;
-    max-width: 1200px;
     text-align: left;
     animation: none;
     display: flex;
     align-items: stretch;
-    gap: 10px;
     height: 100%;
     min-height: 0; /* Allow flex child to shrink */
 }
@@ -225,28 +227,26 @@ main {
     display: flex;
     flex-direction: column;
     min-height: 0; /* Allow flex child to shrink */
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
-/* Navigation controls removed - buttons now positioned outside */
-
 .trains-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    /* Row count must match trains_per_page in app.py */
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    row-gap: 4px;
     background: #000000;
     width: 100%;
-    min-height: 100%;
+    height: 100%;
 }
 
 .nav-button {
     background: #333333;
     color: white;
     border: 1px solid #555555;
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
+    width: 72px;
+    height: 62px;
+    font-size: 2.6rem;
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -254,29 +254,21 @@ main {
     justify-content: center;
     font-family: 'Arial', sans-serif;
     transition: all 0.2s ease;
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1000;
     border-radius: 3px;
 }
 
-.nav-button-left {
-    left: 10px;
-}
-
-.nav-button-right {
-    right: 10px;
+.nav-button svg {
+    width: 32px;
+    height: 32px;
 }
 
 .nav-button:hover {
     background: #444444;
     border-color: #666666;
-    transform: translateY(-50%) scale(1.1);
 }
 
 .nav-button:active {
-    transform: translateY(-50%) scale(0.9);
+    transform: scale(0.9);
 }
 
 .nav-button:disabled {
@@ -289,27 +281,31 @@ main {
 
 .train-item {
     display: flex;
+    align-items: stretch;
+    font-family: 'Arial', sans-serif;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.train-position {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    flex-shrink: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.train-panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
     align-items: center;
     justify-content: space-between;
     background: #333333;
-    padding: 25px 25px;
-    border-radius: 0;
-    border: none;
-    transition: none;
-    animation: none;
-    border-bottom: 2px solid #444444;
-    font-family: 'Arial', sans-serif;
-    min-height: 100px;
-    flex-shrink: 0; /* Prevent items from shrinking */
-}
-
-.train-item:last-child {
-    border-bottom: none;
-}
-
-.train-item:hover {
-    transform: none;
-    box-shadow: none;
+    padding: 0 20px 0 6px;
 }
 
 .train-route-container {
@@ -320,13 +316,25 @@ main {
 }
 
 .train-time {
-    font-size: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     font-weight: 700;
     color: #ffffff;
-    text-align: right;
     font-family: 'Arial', sans-serif;
-    min-width: 100px;
+    min-width: 80px;
     flex-shrink: 0;
+    line-height: 1;
+}
+
+.train-time-value {
+    font-size: 2.8rem;
+}
+
+.train-time-unit {
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-top: 2px;
 }
 
 .train-destination {
@@ -426,23 +434,27 @@ main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    font-size: 1.4rem;
+    font-size: 1.9rem;
     font-weight: 700;
+    line-height: 1;
     color: white;
     font-family: 'Arial', sans-serif;
-    margin-right: 15px;
+    margin: 0 8px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
-.subway-icon.large {
-    width: 75px;
-    height: 75px;
-    font-size: 2.4rem;
-    margin-right: 20px;
-    flex-shrink: 0;
+.subway-icon.express {
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    font-size: 1.6rem;
+}
+
+.subway-icon.multi-char {
+    font-size: 1.2rem;
 }
 
 /* Route color classes */
@@ -453,7 +465,7 @@ main {
 .mta-orange { background-color: #ff6319; }
 .mta-brown { background-color: #996633; }
 .mta-yellow { background-color: #fccc0a; color: #000000; }
-.mta-gray { background-color: #808183; }
+.mta-gray { background-color: #a7a9ac; }
 .mta-purple { background-color: #b933ad; }
 
 /* Responsive design for 7" display (800x480 typical) */
@@ -467,13 +479,7 @@ main {
     }
     
     .header-content {
-        flex-direction: row;
         gap: 10px;
-        justify-content: space-between;
-    }
-    
-    .site-logo {
-        height: 45px;
     }
     
     .last-updated {
@@ -495,35 +501,18 @@ main {
     
     .content {
         padding: 0;
-        gap: 5px;
     }
     
     .main-content {
         max-width: 100%;
     }
     
-    .nav-button {
-        width: 30px;
-        height: 30px;
-        font-size: 1rem;
-    }
-    
-    .nav-button-left {
-        left: 8px;
-    }
-    
-    .nav-button-right {
-        right: 8px;
-    }
-    
     main {
         padding: 0;
-        padding-bottom: 50px;
     }
     
-    .train-item {
-        padding: 20px 20px;
-        min-height: 85px;
+    .train-panel {
+        padding: 0 16px 0 6px;
     }
     
     .header-content {
@@ -543,23 +532,15 @@ main {
     }
     
     .footer {
-        padding: 10px 15px;
+        padding: 6px 8px;
     }
     
     .last-updated {
         font-size: 0.85rem;
     }
     
-    .subway-icon.large {
-        width: 65px;
-        height: 65px;
-        font-size: 2rem;
-        margin-right: 15px;
-    }
-    
-    .train-time {
-        font-size: 2rem;
-        min-width: 90px;
+    .train-time-value {
+        font-size: 2.4rem;
     }
     
     .train-destination {
@@ -584,16 +565,8 @@ main {
         padding: 5px 12px;
     }
     
-    .subway-icon.large {
-        width: 65px;
-        height: 65px;
-        font-size: 2rem;
-        margin-right: 15px;
-    }
-    
-    .train-time {
-        font-size: 2rem;
-        min-width: 90px;
+    .train-time-value {
+        font-size: 2.4rem;
     }
     
     .train-destination {
@@ -606,45 +579,16 @@ main {
         margin-left: 12px;
     }
     
-    .train-item {
-        padding: 25px 20px;
-        min-height: 90px;
-    }
-    
-    .nav-button {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
-    }
-    
-    .nav-button-left {
-        left: 5px;
-    }
-    
-    .nav-button-right {
-        right: 5px;
-    }
-    
     main {
         padding: 0;
-        padding-bottom: 45px;
     }
     
-    .train-item {
-        padding: 18px 18px;
-        min-height: 80px;
+    .train-panel {
+        padding: 0 12px 0 4px;
     }
     
     .header-content {
         gap: 10px;
-        flex-wrap: wrap;
-    }
-    
-    .header-left,
-    .header-center,
-    .header-right {
-        flex: 1 1 auto;
-        min-width: 0;
     }
     
     .station-title-header h2 {
@@ -660,23 +604,15 @@ main {
     }
     
     .footer {
-        padding: 8px 12px;
+        padding: 6px;
     }
     
     .last-updated {
         font-size: 0.8rem;
     }
     
-    .subway-icon.large {
-        width: 60px;
-        height: 60px;
-        font-size: 1.8rem;
-        margin-right: 12px;
-    }
-    
-    .train-time {
-        font-size: 1.8rem;
-        min-width: 80px;
+    .train-time-value {
+        font-size: 2.1rem;
     }
     
     .train-destination {

@@ -87,8 +87,7 @@ MTA Tracker/
 │   └── index.html       # Web interface template
 ├── static/
 │   └── css/
-│       ├── style.css    # Main stylesheet
-│       └── subway-icons.css  # Subway line icons
+│       └── style.css    # Main stylesheet
 └── gtfs_subway/         # GTFS static data files
     ├── stops.txt        # Station information
     ├── trips.txt        # Trip headsigns

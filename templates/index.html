@@ -5,24 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTA Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/subway-icons.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-left">
-                    <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
-                </div>
                 <div class="header-center station-title-header">
                     <h2 id="station-name">Station Name</h2>
                     <span id="direction" class="direction">Direction</span>
-                </div>
-                <div class="header-right">
-                    <div class="temperature-display">
-                        <span id="temperature">--</span>°F
-                    </div>
                 </div>
             </div>
         </header>
@@ -34,24 +25,32 @@
             </div>
 
             <div id="content" class="content" style="display: none;">
-                <button id="prev-page" class="nav-button nav-button-left" onclick="previousPage()">‹</button>
-                
                 <div class="main-content">
-
                     <div class="trains-container">
                         <div id="trains-list" class="trains-list">
                             <!-- Trains will be populated here -->
                         </div>
                     </div>
                 </div>
-                
-                <button id="next-page" class="nav-button nav-button-right" onclick="nextPage()">›</button>
             </div>
         </main>
 
         <footer class="footer">
+            <div class="footer-left">
+                <button id="prev-page" class="nav-button" onclick="previousPage()" aria-label="Previous page">‹</button>
+                <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
+            </div>
             <div class="last-updated">
                 Last updated: <span id="last-updated">--:--:--</span>
+            </div>
+            <div class="footer-right">
+                <div class="temperature-display">
+                    <span id="temperature">--</span>°F
+                </div>
+                <button id="settings-button" class="nav-button" aria-label="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+                <button id="next-page" class="nav-button" onclick="nextPage()" aria-label="Next page">›</button>
             </div>
         </footer>
 
@@ -69,6 +68,7 @@
         let progressInterval;
         let manualNavigation = false; // Flag to track if user is manually navigating
         const CYCLE_DURATION = 10000; // 10 seconds per section for better readability
+        const TRAINS_PER_PAGE = 5; // Must match trains_per_page in app.py
 
         // Route color classes for different subway lines
         const routeColorClasses = {
@@ -85,14 +85,22 @@
             return routeColorClasses[route] || 'mta-gray';
         }
 
+        // Express variants (e.g. "6X") render as the base line in a diamond, like MTA signage
+        function routeIcon(route) {
+            const expressMatch = /^(\w)X$/.exec(route);
+            const label = expressMatch ? expressMatch[1] : route;
+            const classes = ['subway-icon', getRouteColorClass(label)];
+            if (expressMatch) classes.push('express');
+            if (label.length > 1) classes.push('multi-char');
+            return `<span class="${classes.join(' ')}">${label}</span>`;
+        }
+
         function formatMinutes(minutes) {
             if (minutes < 1) {
-                return 'NOW';
-            } else if (minutes < 2) {
-                return '1 MIN';
-            } else {
-                return Math.round(minutes) + ' MIN';
+                return '<span class="train-time-value">NOW</span>';
             }
+            const value = minutes < 2 ? 1 : Math.round(minutes);
+            return `<span class="train-time-value">${value}</span><span class="train-time-unit">MIN</span>`;
         }
 
         function updateDisplay() {
@@ -129,7 +137,7 @@
 
             // Update trains list
             trainsList.innerHTML = '';
-            section.trains.forEach(train => {
+            section.trains.forEach((train, index) => {
                 const trainElement = document.createElement('div');
                 trainElement.className = 'train-item';
                 
@@ -147,15 +155,20 @@
                     }
                 }
                 
+                const position = (section.page - 1) * TRAINS_PER_PAGE + index + 1;
+                
                 trainElement.innerHTML = `
-                    <div class="train-route-container">
-                        <span class="subway-icon large ${getRouteColorClass(train.route)}">${train.route}</span>
-                        <div>
-                            ${primaryDestination ? `<div class="train-destination">${primaryDestination}</div>` : ''}
-                            ${secondaryDestination ? `<div class="train-destination-secondary">${secondaryDestination}</div>` : ''}
+                    <div class="train-position">${position}</div>
+                    <div class="train-panel">
+                        <div class="train-route-container">
+                            ${routeIcon(train.route)}
+                            <div>
+                                ${primaryDestination ? `<div class="train-destination">${primaryDestination}</div>` : ''}
+                                ${secondaryDestination ? `<div class="train-destination-secondary">${secondaryDestination}</div>` : ''}
+                            </div>
                         </div>
+                        <div class="train-time">${formatMinutes(train.minutes)}</div>
                     </div>
-                    <div class="train-time">${formatMinutes(train.minutes)}</div>
                 `;
                 
                 trainsList.appendChild(trainElement);
@@ -228,7 +241,7 @@
                 if (data.data && data.data.length > 0) {
                     sections = data.data;
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('content').style.display = '';
                     document.getElementById('error').style.display = 'none';
                     document.getElementById('last-updated').textContent = data.last_updated;
                     
