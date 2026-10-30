@@ -2,318 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mta-version" content="{{ version }}">
     <title>MTA Tracker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ version }}">
 </head>
-<body>
-    <div class="container">
-        <header>
-            <div class="header-content">
-                <div class="header-center station-title-header">
-                    <h2 id="station-name">Station Name</h2>
-                    <span id="direction" class="direction">Direction</span>
-                </div>
+<body class="board-page">
+    <div class="board">
+        <header class="topbar">
+            <div class="station-block">
+                <h1 class="station-heading">
+                    <button type="button" id="station-button" class="station-button" aria-haspopup="listbox" aria-expanded="false" aria-controls="station-menu">
+                        <span id="station-name">Loading</span>
+                        <svg class="station-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M6.5 9h11L12 16.5z"/>
+                        </svg>
+                    </button>
+                </h1>
+                <span id="direction" class="direction" hidden></span>
+                <div id="station-menu" class="station-dropdown" role="listbox" hidden></div>
             </div>
         </header>
 
-        <main>
-            <div id="loading" class="loading">
+        <main class="arrivals">
+            <div id="loading" class="message">
                 <div class="spinner"></div>
-                <p>Loading train data...</p>
+                <p>Loading trains…</p>
             </div>
-
-            <div id="content" class="content" style="display: none;">
-                <div class="main-content">
-                    <div class="trains-container">
-                        <div id="trains-list" class="trains-list">
-                            <!-- Trains will be populated here -->
-                        </div>
-                    </div>
-                </div>
+            <div id="empty" class="message" hidden>
+                <h2 id="empty-title">No upcoming trains</h2>
+                <p id="empty-body">Nothing is scheduled in the current window.</p>
+                <a class="text-button" href="/settings">Change stations</a>
             </div>
+            <div id="error" class="message message-error" hidden>
+                <h2>Can’t reach train data</h2>
+                <p id="error-body">Check the connection and try again.</p>
+                <button type="button" id="retry" class="text-button">Retry</button>
+            </div>
+            <ol id="trains-list" class="trains-list" hidden></ol>
         </main>
 
-        <footer class="footer">
-            <div class="footer-left">
-                <button id="prev-page" class="nav-button" onclick="previousPage()" aria-label="Previous page">‹</button>
-                <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="REMTA" class="site-logo">
-            </div>
-            <div class="last-updated">
-                Last updated: <span id="last-updated">--:--:--</span>
-            </div>
-            <div class="footer-right">
-                <div class="temperature-display">
-                    <span id="temperature">--</span>°F
-                </div>
-                <button id="settings-button" class="nav-button" aria-label="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <div class="cycle-bar" aria-hidden="true"><div id="cycle-bar-fill"></div></div>
+
+        <footer class="board-footer">
+            <div class="footer-side">
+                <button type="button" id="prev-page" class="nav-button" aria-label="Previous" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M15.7 3.3 7.2 12l8.5 8.7 2.2-2.2L11.6 12l6.3-6.5z"/>
+                    </svg>
                 </button>
-                <button id="next-page" class="nav-button" onclick="nextPage()" aria-label="Next page">›</button>
+                <div class="brand">
+                    <img src="https://re-mta.s3.us-west-2.amazonaws.com/RE.png" alt="" class="site-logo"
+                         onerror="this.hidden=true; document.getElementById('brand-fallback').hidden=false;">
+                    <span id="brand-fallback" class="brand-fallback" hidden>MTA</span>
+                </div>
+            </div>
+            <div class="footer-status">
+                <span>Updated <time id="last-updated">--</time></span>
+                <span class="page-indicator" id="page-indicator"></span>
+                <span class="status-note" id="status-note"></span>
+                <span class="version" id="app-version" title="Running version"></span>
+            </div>
+            <div class="footer-side footer-side-end">
+                <div class="temperature" id="temperature-wrap" hidden>
+                    <span id="temperature">--</span>°
+                </div>
+                <a class="nav-button" href="/settings" aria-label="Settings">
+                    <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.16 7.16 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.16 7.16 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+                    </svg>
+                </a>
+                <button type="button" id="next-page" class="nav-button" aria-label="Next" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M8.3 3.3 16.8 12l-8.5 8.7-2.2-2.2L12.4 12 6.1 5.5z"/>
+                    </svg>
+                </button>
             </div>
         </footer>
-
-        <div id="error" class="error" style="display: none;">
-            <h3>Unable to load train data</h3>
-            <p>Please check your connection and try again.</p>
-            <button onclick="location.reload()">Retry</button>
-        </div>
     </div>
-
-    <script>
-        let currentSectionIndex = 0;
-        let sections = [];
-        let cycleInterval;
-        let progressInterval;
-        let manualNavigation = false; // Flag to track if user is manually navigating
-        const CYCLE_DURATION = 10000; // 10 seconds per section for better readability
-        const TRAINS_PER_PAGE = 5; // Must match trains_per_page in app.py
-
-        // Route color classes for different subway lines
-        const routeColorClasses = {
-            '1': 'mta-red', '2': 'mta-red', '3': 'mta-red',
-            '4': 'mta-green', '5': 'mta-green', '6': 'mta-green',
-            '7': 'mta-purple', 'A': 'mta-blue', 'C': 'mta-blue', 'E': 'mta-blue',
-            'B': 'mta-orange', 'D': 'mta-orange', 'F': 'mta-orange', 'M': 'mta-orange',
-            'G': 'mta-green-2', 'J': 'mta-brown', 'Z': 'mta-brown',
-            'L': 'mta-gray', 'N': 'mta-yellow', 'Q': 'mta-yellow', 'R': 'mta-yellow', 'W': 'mta-yellow',
-            'S': 'mta-gray'
-        };
-
-        function getRouteColorClass(route) {
-            return routeColorClasses[route] || 'mta-gray';
-        }
-
-        // Express variants (e.g. "6X") render as the base line in a diamond, like MTA signage
-        function routeIcon(route) {
-            const expressMatch = /^(\w)X$/.exec(route);
-            const label = expressMatch ? expressMatch[1] : route;
-            const classes = ['subway-icon', getRouteColorClass(label)];
-            if (expressMatch) classes.push('express');
-            if (label.length > 1) classes.push('multi-char');
-            return `<span class="${classes.join(' ')}">${label}</span>`;
-        }
-
-        function formatMinutes(minutes) {
-            if (minutes < 1) {
-                return '<span class="train-time-value">NOW</span>';
-            }
-            const value = minutes < 2 ? 1 : Math.round(minutes);
-            return `<span class="train-time-value">${value}</span><span class="train-time-unit">MIN</span>`;
-        }
-
-        function updateDisplay() {
-            if (sections.length === 0) return;
-
-            const section = sections[currentSectionIndex];
-            const stationName = document.getElementById('station-name');
-            const trainsList = document.getElementById('trains-list');
-
-            // Update header info - station name and direction are now in header
-            if (stationName) {
-                stationName.textContent = section.station;
-            }
-            
-            // Update direction in header
-            const headerDirection = document.querySelector('.station-title-header .direction');
-            if (headerDirection) {
-                headerDirection.textContent = section.direction;
-                headerDirection.className = 'direction';
-                if (section.direction === 'Northbound') {
-                    headerDirection.classList.add('direction-northbound');
-                } else if (section.direction === 'Southbound') {
-                    headerDirection.classList.add('direction-southbound');
-                } else if (section.direction === 'Uptown') {
-                    headerDirection.classList.add('direction-uptown');
-                } else if (section.direction === 'Downtown') {
-                    headerDirection.classList.add('direction-downtown');
-                } else if (section.direction === 'Manhattan Bound') {
-                    headerDirection.classList.add('direction-manhattan-bound');
-                } else if (section.direction === 'Brooklyn Bound') {
-                    headerDirection.classList.add('direction-brooklyn-bound');
-                }
-            }
-
-            // Update trains list
-            trainsList.innerHTML = '';
-            section.trains.forEach((train, index) => {
-                const trainElement = document.createElement('div');
-                trainElement.className = 'train-item';
-                
-                // Parse destination to separate primary and secondary parts
-                let primaryDestination = '';
-                let secondaryDestination = '';
-                
-                if (train.destination) {
-                    const destParts = train.destination.split('-');
-                    if (destParts.length > 1) {
-                        primaryDestination = destParts[0].trim();
-                        secondaryDestination = destParts.slice(1).join('-').trim();
-                    } else {
-                        primaryDestination = train.destination;
-                    }
-                }
-                
-                const position = (section.page - 1) * TRAINS_PER_PAGE + index + 1;
-                
-                trainElement.innerHTML = `
-                    <div class="train-position">${position}</div>
-                    <div class="train-panel">
-                        <div class="train-route-container">
-                            ${routeIcon(train.route)}
-                            <div>
-                                ${primaryDestination ? `<div class="train-destination">${primaryDestination}</div>` : ''}
-                                ${secondaryDestination ? `<div class="train-destination-secondary">${secondaryDestination}</div>` : ''}
-                            </div>
-                        </div>
-                        <div class="train-time">${formatMinutes(train.minutes)}</div>
-                    </div>
-                `;
-                
-                trainsList.appendChild(trainElement);
-            });
-        }
-
-        function nextSection() {
-            currentSectionIndex = (currentSectionIndex + 1) % sections.length;
-            updateDisplay();
-        }
-
-        function nextPage() {
-            if (sections.length === 0) return;
-            
-            manualNavigation = true;
-            clearInterval(cycleInterval);
-            clearInterval(progressInterval);
-            
-            currentSectionIndex = (currentSectionIndex + 1) % sections.length;
-            updateDisplay();
-            
-            // Resume automatic cycling after 3 seconds of inactivity
-            setTimeout(() => {
-                if (manualNavigation) {
-                    manualNavigation = false;
-                    startCycling();
-                }
-            }, 3000);
-        }
-
-        function previousPage() {
-            if (sections.length === 0) return;
-            
-            manualNavigation = true;
-            clearInterval(cycleInterval);
-            clearInterval(progressInterval);
-            
-            currentSectionIndex = (currentSectionIndex - 1 + sections.length) % sections.length;
-            updateDisplay();
-            
-            // Resume automatic cycling after 3 seconds of inactivity
-            setTimeout(() => {
-                if (manualNavigation) {
-                    manualNavigation = false;
-                    startCycling();
-                }
-            }, 3000);
-        }
-
-        function startCycling() {
-            if (sections.length === 0) return;
-            
-            updateDisplay();
-            
-            cycleInterval = setInterval(nextSection, CYCLE_DURATION);
-        }
-
-        function stopCycling() {
-            if (cycleInterval) {
-                clearInterval(cycleInterval);
-                cycleInterval = null;
-            }
-        }
-
-        async function fetchData() {
-            try {
-                const response = await fetch('/api/data');
-                const data = await response.json();
-                
-                if (data.data && data.data.length > 0) {
-                    sections = data.data;
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = '';
-                    document.getElementById('error').style.display = 'none';
-                    document.getElementById('last-updated').textContent = data.last_updated;
-                    
-                    // Update temperature if available
-                    if (data.temperature !== null && data.temperature !== undefined) {
-                        document.getElementById('temperature').textContent = data.temperature;
-                    }
-                    
-                    stopCycling();
-                    startCycling();
-                } else {
-                    throw new Error('No data available');
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
-            }
-        }
-
-        // Initial data fetch
-        fetchData();
-
-        // Refresh data every 30 seconds
-        setInterval(fetchData, 30000);
-        
-        // Also fetch temperature separately (updates less frequently)
-        async function fetchTemperature() {
-            try {
-                const response = await fetch('/api/temperature');
-                const data = await response.json();
-                console.log('Temperature API response:', data);
-                if (data.temperature !== null && data.temperature !== undefined) {
-                    document.getElementById('temperature').textContent = data.temperature;
-                } else {
-                    console.warn('Temperature not available:', data);
-                    document.getElementById('temperature').textContent = '--';
-                }
-            } catch (error) {
-                console.error('Error fetching temperature:', error);
-                document.getElementById('temperature').textContent = '--';
-            }
-        }
-        
-        // Fetch temperature every 5 minutes
-        fetchTemperature();
-        setInterval(fetchTemperature, 300000);
-        
-        // Debug: Check weather API status on load
-        async function checkWeatherStatus() {
-            try {
-                const response = await fetch('/api/debug/weather');
-                const data = await response.json();
-                console.log('Weather API Debug Info:', data);
-                if (!data.api_key_set) {
-                    console.error('Weather API key not set! Set OPENWEATHER_API_KEY environment variable.');
-                }
-            } catch (error) {
-                console.error('Error checking weather status:', error);
-            }
-        }
-        checkWeatherStatus();
-
-        // Handle visibility change to pause/resume cycling
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopCycling();
-            } else {
-                startCycling();
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/version.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/board.js') }}?v={{ version }}"></script>
 </body>
 </html>
