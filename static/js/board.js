@@ -113,6 +113,7 @@
         time.appendChild(value);
         if (minutes < 1) {
             value.textContent = "NOW";
+            value.classList.add("is-now");
             return time;
         }
         value.textContent = minutes < 2 ? "1" : String(Math.round(minutes));

@@ -400,6 +400,11 @@ button {
     letter-spacing: -0.03em;
 }
 
+.train-time-value.is-now {
+    font-size: 1.6rem;
+    letter-spacing: 0.02em;
+}
+
 .train-time-unit {
     margin-top: 2px;
     font-size: 0.8rem;
