@@ -16,7 +16,7 @@ EXAMPLE_PATH = BASE_DIR / "config.example.json"
 ENV_PATH = BASE_DIR / ".env"
 
 DEFAULT_CONFIG = {
-    "lookahead_minutes": 20,
+    "trains_ahead": 5,
     "trains_per_page": 5,
     "cycle_seconds": 10,
     "zip_code": "10010",
@@ -81,9 +81,9 @@ def normalize_config(payload, stations_by_id=None, strict=False):
     if not isinstance(payload, dict):
         return None, ["Config must be a JSON object."]
 
-    lookahead, problem = _as_int(payload.get("lookahead_minutes", 20), 20, 5, 60)
-    if problem and strict and "lookahead_minutes" in payload:
-        errors.append(f"lookahead_minutes: {problem}")
+    trains_ahead, problem = _as_int(payload.get("trains_ahead", 5), 5, 1, 20)
+    if problem and strict and "trains_ahead" in payload:
+        errors.append(f"trains_ahead: {problem}")
     per_page, problem = _as_int(payload.get("trains_per_page", 5), 5, 3, 8)
     if problem and strict and "trains_per_page" in payload:
         errors.append(f"trains_per_page: {problem}")
@@ -166,7 +166,7 @@ def normalize_config(payload, stations_by_id=None, strict=False):
         errors.append("Choose at least one station.")
 
     config = {
-        "lookahead_minutes": lookahead,
+        "trains_ahead": trains_ahead,
         "trains_per_page": per_page,
         "cycle_seconds": cycle,
         "zip_code": zip_code,

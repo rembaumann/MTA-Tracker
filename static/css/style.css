@@ -49,8 +49,7 @@ button {
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: 16px;
-    padding: 10px 16px;
-    border-bottom: 3px solid var(--amber);
+    padding: 0 16px;
     flex: 0 0 auto;
     position: relative;
     z-index: 5;
@@ -117,6 +116,15 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+}
+
+.station-tablet {
+    display: block;
+    height: 96px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: center;
 }
 
 .station-chevron {
@@ -189,15 +197,16 @@ button {
 
 .direction {
     flex: 0 0 auto;
+    margin: 0;
+    padding: 4px 20px;
     color: #fff;
-    padding: 6px 14px;
+    background: transparent;
     font-weight: 700;
-    font-size: clamp(0.95rem, 1.8vw, 1.25rem);
-    letter-spacing: 0.02em;
+    font-size: clamp(1.45rem, 2.8vw, 2.15rem);
+    letter-spacing: 0;
+    line-height: 1.1;
+    text-align: left;
 }
-
-.direction-n { background: #c60c30; }
-.direction-s { background: #0039a6; }
 
 .temperature {
     font-size: clamp(1.4rem, 2.4vw, 2rem);
@@ -461,9 +470,7 @@ button {
 }
 
 .cycle-bar {
-    height: 4px;
-    background: #1c1c1c;
-    flex: 0 0 auto;
+    display: none;
 }
 
 #cycle-bar-fill {
@@ -555,12 +562,21 @@ button {
 @media (max-width: 800px), (max-height: 520px) {
     .topbar {
         gap: 8px;
-        padding: 6px 10px;
+        padding: 0 10px;
     }
 
     .station-button {
         min-height: 48px;
         font-size: clamp(1.15rem, 3vw, 1.7rem);
+    }
+
+    .station-tablet {
+        height: 68px;
+    }
+
+    .direction {
+        padding: 2px 12px;
+        font-size: 1.25rem;
     }
 
     .station-option {
@@ -600,10 +616,3 @@ button {
     }
 }
 
-@media (max-width: 640px) {
-    .station-block {
-        flex-direction: column;
-        gap: 4px;
-        align-items: flex-start;
-    }
-}

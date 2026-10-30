@@ -44,7 +44,7 @@ The same choices live in `config.json`. `config.example.json` is the default use
 
 ```json
 {
-  "lookahead_minutes": 20,
+  "trains_ahead": 5,
   "trains_per_page": 5,
   "cycle_seconds": 10,
   "zip_code": "10010",
@@ -146,7 +146,7 @@ Only the feeds for the lines you selected are downloaded.
 
 ## Troubleshooting
 
-- **No trains:** the station may be quiet inside the lookahead window. Raise "Minutes ahead" in settings, or confirm the Pi can reach `api-endpoint.mta.info`.
+- **No trains:** the feed may not list any upcoming arrivals for that platform. Confirm the Pi can reach `api-endpoint.mta.info`.
 - **Temperature missing:** set `OPENWEATHER_API_KEY` in `.env` and restart. See [WEATHER_SETUP.md](WEATHER_SETUP.md).
 - **Port in use:** the app listens on `5001`.
 - **Pi service failed with 217/USER:** the unit still says `User=pi`. Run `./install-pi.sh` again so it writes the real username.

@@ -67,7 +67,7 @@ class ConfigTests(unittest.TestCase):
     def test_save_rejects_an_unknown_station_and_a_line_that_does_not_stop_there(self):
         payload = {
             "zip_code": "10010",
-            "lookahead_minutes": 20,
+            "trains_ahead": 5,
             "trains_per_page": 5,
             "cycle_seconds": 10,
             "stations": [
@@ -116,7 +116,7 @@ class ArrivalTests(unittest.TestCase):
         self.assertEqual(set(platforms), {"635S"})
         self.assertEqual(platforms["635S"], {"6"})
 
-    def test_collect_arrivals_filters_line_direction_and_window(self):
+    def test_collect_arrivals_keeps_the_next_trains_for_that_platform(self):
         now = datetime(2026, 10, 21, 12, 0, tzinfo=timezone.utc)
         feed = gtfs_realtime_pb2.FeedMessage()
 
@@ -134,11 +134,13 @@ class ArrivalTests(unittest.TestCase):
         add("6", "635N", 3, "up-6")
         add("4", "635N", 4, "up-4")
         add("6", "635S", 5, "down-6")
-        add("6", "635N", 40, "later")
+        add("6", "635N", -1, "gone")
         add("L", "L03N", 2, "the-l")
+        for index, minutes in enumerate((8, 15, 25, 40, 90)):
+            add("6", "635N", minutes, f"later-{index}")
 
         config, errors = normalize_config({
-            "lookahead_minutes": 20,
+            "trains_ahead": 5,
             "stations": [{
                 "id": "635",
                 "directions": ["N"],
@@ -157,9 +159,11 @@ class ArrivalTests(unittest.TestCase):
         self.assertEqual(len(groups), 1)
         self.assertEqual(groups[0]["station_id"], "635N")
         self.assertEqual(groups[0]["direction"], "Uptown")
-        self.assertEqual(len(groups[0]["trains"]), 1)
-        self.assertEqual(groups[0]["trains"][0]["route"], "6")
-        self.assertEqual(groups[0]["trains"][0]["destination"], "Pelham Bay Park")
+        trains = groups[0]["trains"]
+        self.assertEqual(len(trains), 5)
+        self.assertEqual([train["route"] for train in trains], ["6", "6", "6", "6", "6"])
+        self.assertEqual(trains[0]["destination"], "Pelham Bay Park")
+        self.assertEqual([train["minutes"] for train in trains], [3, 8, 15, 25, 40])
 
     def test_board_stations_keep_only_enabled_lines(self):
         stations = board_stations({
@@ -201,6 +205,11 @@ class HttpTests(unittest.TestCase):
         self.assertIn(b'id="prev-page"', board.data)
         self.assertIn(b'id="next-page"', board.data)
         self.assertIn(b"station-menu", board.data)
+        tablet = self.client.get("/tablets/635.png")
+        self.assertEqual(tablet.status_code, 200)
+        self.assertTrue(tablet.content_type.startswith("image/png"))
+        self.assertEqual(self.client.get("/tablets/NOPE.png").status_code, 404)
+        self.assertEqual(self.client.get("/tablets/635.txt").status_code, 404)
         self.assertNotIn(b"line-picker", board.data)
         self.assertNotIn(b"pause-cycle", board.data)
         settings = self.client.get("/settings")
@@ -209,7 +218,7 @@ class HttpTests(unittest.TestCase):
 
     def test_settings_round_trip(self):
         payload = {
-            "lookahead_minutes": 15,
+            "trains_ahead": 5,
             "trains_per_page": 4,
             "cycle_seconds": 12,
             "zip_code": "10003",
@@ -224,6 +233,7 @@ class HttpTests(unittest.TestCase):
         loaded = self.client.get("/api/config")
         self.assertEqual(loaded.get_json()["stations"][0]["id"], "L03")
         self.assertEqual(loaded.get_json()["zip_code"], "10003")
+        self.assertEqual(loaded.get_json()["trains_ahead"], 5)
         stations = self.client.get("/api/stations")
         self.assertGreater(len(stations.get_json()["stations"]), 400)
 
