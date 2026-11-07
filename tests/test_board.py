@@ -215,6 +215,8 @@ class HttpTests(unittest.TestCase):
         settings = self.client.get("/settings")
         self.assertEqual(settings.status_code, 200)
         self.assertIn(b"Add a station", settings.data)
+        self.assertIn(b'settings-page', settings.data)
+        self.assertIn(b'settings-scroll', settings.data)
 
     def test_settings_round_trip(self):
         payload = {
