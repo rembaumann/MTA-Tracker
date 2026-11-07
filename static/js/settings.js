@@ -93,9 +93,30 @@
                 head.appendChild(handle);
             }
 
+            var titleWrap = document.createElement("div");
+            titleWrap.className = "card-title";
             var title = document.createElement("h3");
             title.textContent = name;
-            head.appendChild(title);
+            titleWrap.appendChild(title);
+
+            if (reorderMode) {
+                var chips = document.createElement("div");
+                chips.className = "result-lines card-lines";
+                (station ? station.routes : []).forEach(function (route) {
+                    if (entry.routes.indexOf(route.id) < 0) {
+                        return;
+                    }
+                    var dot = document.createElement("span");
+                    dot.className = "mini-bullet" + (route.express ? " express" : "");
+                    dot.style.background = route.color;
+                    dot.style.color = route.text_color;
+                    dot.textContent = route.short;
+                    chips.appendChild(dot);
+                });
+                titleWrap.appendChild(chips);
+            }
+
+            head.appendChild(titleWrap);
 
             if (!reorderMode) {
                 var actions = document.createElement("div");
@@ -108,6 +129,7 @@
                 head.appendChild(actions);
             }
 
+            card.dataset.stationId = entry.id;
             card.appendChild(head);
 
             if (!reorderMode) {
@@ -184,6 +206,8 @@
             card.style.top = rect.top + "px";
             card.style.left = rect.left + "px";
             insertPlaceholder(index, rect.height);
+            // Keep the floating card out of list hit-testing / flex flow bookkeeping.
+            document.body.appendChild(card);
             handle.setPointerCapture(event.pointerId);
             handle.addEventListener("pointermove", onDragMove);
             handle.addEventListener("pointerup", onDragEnd);
@@ -307,8 +331,9 @@
         if (drag.raf) {
             window.cancelAnimationFrame(drag.raf);
         }
-        drag.card.classList.remove("is-dragging");
-        drag.card.style.cssText = "";
+        if (drag.card) {
+            drag.card.remove();
+        }
         var placeholder = placeholderNode();
         if (placeholder) {
             placeholder.remove();

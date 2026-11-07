@@ -156,10 +156,19 @@ body.settings-page {
     justify-content: flex-start;
 }
 
+.card-title {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
 .card-head h3,
 .result-name {
     font-size: 1.35rem;
     min-width: 0;
+}
+
+.card-lines {
+    margin-top: 6px;
 }
 
 .card-actions {
