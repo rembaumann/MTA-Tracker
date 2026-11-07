@@ -13,7 +13,10 @@
         <header class="settings-top">
             <a class="control-button settings-back" href="/">‹ Board</a>
             <h1>Stations</h1>
-            <button type="button" id="save" class="control-button control-save">Save</button>
+            <div class="settings-top-actions">
+                <button type="button" id="reorder" class="control-button control-reorder" aria-pressed="false">Reorder</button>
+                <button type="button" id="save" class="control-button control-save">Save</button>
+            </div>
         </header>
 
         <div class="settings-scroll">
@@ -22,7 +25,7 @@
             <section class="panel">
                 <div class="panel-head">
                     <h2>On the board</h2>
-                    <p>These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.</p>
+                    <p id="board-hint">These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.</p>
                 </div>
                 <div id="selected-list" class="selected-list"></div>
             </section>

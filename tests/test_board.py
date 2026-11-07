@@ -217,6 +217,7 @@ class HttpTests(unittest.TestCase):
         self.assertIn(b"Add a station", settings.data)
         self.assertIn(b'settings-page', settings.data)
         self.assertIn(b'settings-scroll', settings.data)
+        self.assertIn(b'id="reorder"', settings.data)
 
     def test_settings_round_trip(self):
         payload = {

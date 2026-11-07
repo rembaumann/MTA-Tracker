@@ -22,6 +22,19 @@ body.settings-page {
     z-index: 2;
 }
 
+.settings-top-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.control-reorder.is-on {
+    background: #fff;
+    color: #111;
+    border-color: #fff;
+}
+
 /* Dedicated scroll pane so a Pi touchscreen can pan without needing the scrollbar. */
 .settings-scroll {
     flex: 1 1 auto;
@@ -98,11 +111,37 @@ body.settings-page {
     margin-top: 12px;
 }
 
+.selected-list.is-reordering {
+    gap: 10px;
+    padding-bottom: 24px;
+}
+
 .station-card,
 .result-row {
     background: #161616;
     border: 1px solid #2c2c2c;
     padding: 12px;
+}
+
+.station-card.is-reorder-card {
+    padding: 8px 12px;
+    touch-action: none;
+}
+
+.station-card.is-dragging {
+    position: fixed;
+    z-index: 20;
+    margin: 0;
+    pointer-events: none;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+    border-color: var(--amber);
+    background: #1d1d1d;
+}
+
+.station-placeholder {
+    border: 1px dashed #555;
+    background: #101010;
+    box-sizing: border-box;
 }
 
 .card-head,
@@ -113,14 +152,60 @@ body.settings-page {
     gap: 12px;
 }
 
+.station-card.is-reorder-card .card-head {
+    justify-content: flex-start;
+}
+
 .card-head h3,
 .result-name {
     font-size: 1.35rem;
+    min-width: 0;
 }
 
 .card-actions {
     display: flex;
     gap: 8px;
+}
+
+.drag-handle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    min-width: var(--touch);
+    min-height: var(--touch);
+    padding: 0 14px;
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    cursor: grab;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.drag-handle span {
+    display: block;
+    width: 22px;
+    height: 3px;
+    background: #d0d0d0;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+    background: #333;
+    border-color: var(--amber);
+}
+
+body.is-reordering .settings-scroll {
+    touch-action: pan-y;
+}
+
+body.is-reordering .search,
+body.is-reordering .display-options,
+body.is-reordering .results {
+    opacity: 0.35;
+    pointer-events: none;
 }
 
 .icon-button,
@@ -247,12 +332,23 @@ body.settings-page {
 
 @media (max-width: 700px) {
     .settings-top {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr auto;
     }
 
     .settings-top h1 {
         grid-column: 1 / -1;
         order: -1;
         text-align: left;
+    }
+
+    .settings-top-actions {
+        grid-column: 2;
+    }
+
+    .control-reorder,
+    .control-save {
+        min-width: 0;
+        padding: 0 14px;
+        font-size: 1.15rem;
     }
 }

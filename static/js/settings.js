@@ -1,10 +1,15 @@
 (function () {
     var catalog = [];
     var selected = [];
+    var reorderMode = false;
+    var drag = null;
     var banner = document.getElementById("banner");
     var results = document.getElementById("results");
     var selectedList = document.getElementById("selected-list");
     var search = document.getElementById("search");
+    var reorderButton = document.getElementById("reorder");
+    var boardHint = document.getElementById("board-hint");
+    var scrollPane = document.querySelector(".settings-scroll");
 
     function showBanner(text, kind) {
         banner.hidden = !text;
@@ -37,6 +42,28 @@
         return button;
     }
 
+    function updateReorderChrome() {
+        reorderButton.textContent = reorderMode ? "Done" : "Reorder";
+        reorderButton.setAttribute("aria-pressed", reorderMode ? "true" : "false");
+        reorderButton.classList.toggle("is-on", reorderMode);
+        document.body.classList.toggle("is-reordering", reorderMode);
+        selectedList.classList.toggle("is-reordering", reorderMode);
+        boardHint.textContent = reorderMode
+            ? "Drag a station by the handle to change the board order."
+            : "These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.";
+    }
+
+    function setReorderMode(on) {
+        if (on && selected.length < 2) {
+            showBanner("Add at least two stations before reordering.", "");
+            return;
+        }
+        endDrag();
+        reorderMode = on;
+        updateReorderChrome();
+        renderSelected();
+    }
+
     function renderSelected() {
         selectedList.innerHTML = "";
         if (!selected.length) {
@@ -48,66 +75,245 @@
         }
         selected.forEach(function (entry, index) {
             var station = stationById(entry.id);
+            var name = station ? station.name : entry.id;
             var card = document.createElement("article");
-            card.className = "station-card";
+            card.className = "station-card" + (reorderMode ? " is-reorder-card" : "");
+            card.dataset.index = String(index);
 
             var head = document.createElement("div");
             head.className = "card-head";
 
+            if (reorderMode) {
+                var handle = document.createElement("button");
+                handle.type = "button";
+                handle.className = "drag-handle";
+                handle.setAttribute("aria-label", "Drag to reorder " + name);
+                handle.innerHTML = "<span aria-hidden=\"true\"></span><span aria-hidden=\"true\"></span><span aria-hidden=\"true\"></span>";
+                bindHandle(handle, card);
+                head.appendChild(handle);
+            }
+
             var title = document.createElement("h3");
-            title.textContent = station ? station.name : entry.id;
+            title.textContent = name;
             head.appendChild(title);
 
-            var actions = document.createElement("div");
-            actions.className = "card-actions";
-            actions.appendChild(iconButton("Up", "↑", function () { move(index, -1); }, index === 0));
-            actions.appendChild(iconButton("Down", "↓", function () { move(index, 1); }, index === selected.length - 1));
-            actions.appendChild(iconButton("Remove " + (station ? station.name : entry.id), "✕", function () {
-                selected.splice(index, 1);
-                renderSelected();
-                renderResults();
-            }, false));
-            head.appendChild(actions);
+            if (!reorderMode) {
+                var actions = document.createElement("div");
+                actions.className = "card-actions";
+                actions.appendChild(iconButton("Remove " + name, "✕", function () {
+                    selected.splice(index, 1);
+                    renderSelected();
+                    renderResults();
+                }, false));
+                head.appendChild(actions);
+            }
+
             card.appendChild(head);
 
-            var directions = document.createElement("div");
-            directions.className = "choice-row";
-            var directionOptions = station ? station.directions : [
-                { id: "N", label: "Northbound" },
-                { id: "S", label: "Southbound" }
-            ];
-            directionOptions.forEach(function (direction) {
-                var button = document.createElement("button");
-                button.type = "button";
-                button.className = "choice" + (entry.directions.indexOf(direction.id) >= 0 ? " is-on" : "");
-                button.textContent = direction.label;
-                button.addEventListener("click", function () {
-                    toggleList(entry.directions, direction.id);
-                    if (!entry.directions.length) {
-                        entry.directions.push(direction.id);
-                    }
-                    renderSelected();
+            if (!reorderMode) {
+                var directions = document.createElement("div");
+                directions.className = "choice-row";
+                var directionOptions = station ? station.directions : [
+                    { id: "N", label: "Northbound" },
+                    { id: "S", label: "Southbound" }
+                ];
+                directionOptions.forEach(function (direction) {
+                    var button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "choice" + (entry.directions.indexOf(direction.id) >= 0 ? " is-on" : "");
+                    button.textContent = direction.label;
+                    button.addEventListener("click", function () {
+                        toggleList(entry.directions, direction.id);
+                        if (!entry.directions.length) {
+                            entry.directions.push(direction.id);
+                        }
+                        renderSelected();
+                    });
+                    directions.appendChild(button);
                 });
-                directions.appendChild(button);
-            });
-            card.appendChild(directions);
+                card.appendChild(directions);
 
-            var lines = document.createElement("div");
-            lines.className = "choice-row line-row";
-            (station ? station.routes : []).forEach(function (route) {
-                var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
-                button.addEventListener("click", function () {
-                    toggleList(entry.routes, route.id);
-                    if (!entry.routes.length) {
-                        entry.routes.push(route.id);
-                    }
-                    renderSelected();
+                var lines = document.createElement("div");
+                lines.className = "choice-row line-row";
+                (station ? station.routes : []).forEach(function (route) {
+                    var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
+                    button.addEventListener("click", function () {
+                        toggleList(entry.routes, route.id);
+                        if (!entry.routes.length) {
+                            entry.routes.push(route.id);
+                        }
+                        renderSelected();
+                    });
+                    lines.appendChild(button);
                 });
-                lines.appendChild(button);
-            });
-            card.appendChild(lines);
+                card.appendChild(lines);
+            }
+
             selectedList.appendChild(card);
         });
+    }
+
+    function cardIndex(card) {
+        return Array.prototype.indexOf.call(selectedList.querySelectorAll(".station-card"), card);
+    }
+
+    function bindHandle(handle, card) {
+        handle.addEventListener("pointerdown", function (event) {
+            if (!reorderMode || event.button) {
+                return;
+            }
+            event.preventDefault();
+            var index = cardIndex(card);
+            if (index < 0) {
+                return;
+            }
+            var rect = card.getBoundingClientRect();
+            drag = {
+                card: card,
+                index: index,
+                pointerId: event.pointerId,
+                offsetY: event.clientY - rect.top,
+                height: rect.height,
+                lastY: event.clientY,
+                autoScroll: 0,
+                raf: 0
+            };
+            card.classList.add("is-dragging");
+            card.style.width = rect.width + "px";
+            card.style.height = rect.height + "px";
+            card.style.top = rect.top + "px";
+            card.style.left = rect.left + "px";
+            insertPlaceholder(index, rect.height);
+            handle.setPointerCapture(event.pointerId);
+            handle.addEventListener("pointermove", onDragMove);
+            handle.addEventListener("pointerup", onDragEnd);
+            handle.addEventListener("pointercancel", onDragEnd);
+            moveDragCard(event.clientY);
+            startAutoScroll();
+        });
+    }
+
+    function insertPlaceholder(index, height) {
+        var placeholder = document.createElement("div");
+        placeholder.className = "station-placeholder";
+        placeholder.style.height = height + "px";
+        var cards = selectedList.querySelectorAll(".station-card");
+        var reference = cards[index] || null;
+        selectedList.insertBefore(placeholder, reference);
+    }
+
+    function placeholderNode() {
+        return selectedList.querySelector(".station-placeholder");
+    }
+
+    function moveDragCard(clientY) {
+        if (!drag) {
+            return;
+        }
+        var top = clientY - drag.offsetY;
+        drag.card.style.top = top + "px";
+        var mid = top + drag.height / 2;
+        var placeholder = placeholderNode();
+        if (!placeholder) {
+            return;
+        }
+        var siblings = Array.prototype.filter.call(selectedList.children, function (node) {
+            return node.classList.contains("station-card") && node !== drag.card;
+        });
+        var insertBefore = null;
+        for (var i = 0; i < siblings.length; i += 1) {
+            var rect = siblings[i].getBoundingClientRect();
+            if (mid < rect.top + rect.height / 2) {
+                insertBefore = siblings[i];
+                break;
+            }
+        }
+        if (insertBefore) {
+            selectedList.insertBefore(placeholder, insertBefore);
+        } else {
+            selectedList.appendChild(placeholder);
+        }
+    }
+
+    function startAutoScroll() {
+        if (!drag || drag.raf) {
+            return;
+        }
+        function tick() {
+            if (!drag) {
+                return;
+            }
+            if (drag.autoScroll) {
+                scrollPane.scrollTop += drag.autoScroll;
+                moveDragCard(drag.lastY);
+            }
+            drag.raf = window.requestAnimationFrame(tick);
+        }
+        drag.raf = window.requestAnimationFrame(tick);
+    }
+
+    function onDragMove(event) {
+        if (!drag || event.pointerId !== drag.pointerId) {
+            return;
+        }
+        event.preventDefault();
+        drag.lastY = event.clientY;
+        moveDragCard(event.clientY);
+        var paneRect = scrollPane.getBoundingClientRect();
+        var edge = 56;
+        if (event.clientY < paneRect.top + edge) {
+            drag.autoScroll = -10;
+        } else if (event.clientY > paneRect.bottom - edge) {
+            drag.autoScroll = 10;
+        } else {
+            drag.autoScroll = 0;
+        }
+    }
+
+    function onDragEnd(event) {
+        if (!drag || event.pointerId !== drag.pointerId) {
+            return;
+        }
+        var handle = event.currentTarget;
+        handle.releasePointerCapture(event.pointerId);
+        handle.removeEventListener("pointermove", onDragMove);
+        handle.removeEventListener("pointerup", onDragEnd);
+        handle.removeEventListener("pointercancel", onDragEnd);
+
+        var placeholder = placeholderNode();
+        var from = drag.index;
+        var to = from;
+        if (placeholder) {
+            var nodes = Array.prototype.filter.call(selectedList.children, function (node) {
+                return node === placeholder || (node.classList.contains("station-card") && node !== drag.card);
+            });
+            to = nodes.indexOf(placeholder);
+            if (to < 0) {
+                to = from;
+            }
+        }
+        if (to !== from) {
+            var item = selected.splice(from, 1)[0];
+            selected.splice(to, 0, item);
+        }
+        endDrag();
+        renderSelected();
+    }
+
+    function endDrag() {
+        if (!drag) {
+            return;
+        }
+        if (drag.raf) {
+            window.cancelAnimationFrame(drag.raf);
+        }
+        drag.card.classList.remove("is-dragging");
+        drag.card.style.cssText = "";
+        var placeholder = placeholderNode();
+        if (placeholder) {
+            placeholder.remove();
+        }
+        drag = null;
     }
 
     function iconButton(label, text, onClick, disabled) {
@@ -128,16 +334,6 @@
         } else {
             list.push(value);
         }
-    }
-
-    function move(index, delta) {
-        var next = index + delta;
-        if (next < 0 || next >= selected.length) {
-            return;
-        }
-        var item = selected.splice(index, 1)[0];
-        selected.splice(next, 0, item);
-        renderSelected();
     }
 
     function addStation(station) {
@@ -259,6 +455,9 @@
     }
 
     async function save() {
+        if (reorderMode) {
+            setReorderMode(false);
+        }
         showBanner("Saving…", "");
         try {
             var response = await fetch("/api/config", {
@@ -300,6 +499,7 @@
             document.getElementById("per-page").value = config.trains_per_page;
             document.getElementById("cycle").value = config.cycle_seconds;
             document.getElementById("zip").value = config.zip_code;
+            updateReorderChrome();
             renderSelected();
             renderResults();
         } catch (err) {
@@ -308,6 +508,9 @@
     }
 
     search.addEventListener("input", renderResults);
+    reorderButton.addEventListener("click", function () {
+        setReorderMode(!reorderMode);
+    });
     document.getElementById("save").addEventListener("click", save);
     init();
 })();
