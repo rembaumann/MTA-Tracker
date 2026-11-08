@@ -76,7 +76,8 @@ sl-button.control-reorder[aria-pressed="true"]::part(base) {
     color: #111;
 }
 
-sl-button.choice.is-on::part(base) {
+sl-button.choice.is-on::part(base),
+sl-button.direction-button.is-on::part(base) {
     background-color: #fff;
     border-color: #fff;
     color: #111;
@@ -101,6 +102,37 @@ sl-button.drag-handle:active::part(base) {
 
 sl-button.icon-button::part(base) {
     min-width: var(--touch);
+    width: var(--touch);
+    padding-inline: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+sl-button.icon-button::part(prefix),
+sl-button.icon-button::part(suffix) {
+    display: none;
+}
+
+sl-button.icon-button::part(label) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    line-height: 0;
+}
+
+sl-button.icon-button sl-icon {
+    font-size: 1.45rem;
+}
+
+sl-button.trash-button::part(base) {
+    color: #ffc0c0;
+}
+
+sl-button.direction-button:not(.is-on)::part(base) {
+    color: #cfcfcf;
 }
 
 .settings-top-actions sl-button,
