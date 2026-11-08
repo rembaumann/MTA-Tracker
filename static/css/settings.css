@@ -26,7 +26,22 @@ body.settings-page {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 12px;
+}
+
+.save-status {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.save-status.is-saved {
+    color: #8fd49c;
+}
+
+.save-status.is-error {
+    color: #ff9b9b;
 }
 
 
@@ -100,7 +115,7 @@ body.settings-page {
     margin-top: 12px;
 }
 
-.selected-list.is-reordering {
+.selected-list.is-editing {
     gap: 10px;
     padding-bottom: 24px;
 }
@@ -112,7 +127,7 @@ body.settings-page {
     padding: 12px;
 }
 
-.station-card.is-reorder-card {
+.station-card.is-edit-card {
     touch-action: none;
 }
 
@@ -138,10 +153,6 @@ body.settings-page {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-}
-
-.card-body.is-reorder-body {
-    justify-content: flex-start;
 }
 
 .card-main {
@@ -170,13 +181,13 @@ body.settings-page {
     flex: 0 0 auto;
 }
 
-body.is-reordering .settings-scroll {
+body.is-editing .settings-scroll {
     touch-action: pan-y;
 }
 
-body.is-reordering .search,
-body.is-reordering .display-options,
-body.is-reordering .results {
+body.is-editing .search,
+body.is-editing .display-options,
+body.is-editing .results {
     opacity: 0.35;
     pointer-events: none;
 }

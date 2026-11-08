@@ -59,18 +59,7 @@ sl-button.icon-button::part(base) {
     font-weight: 700;
 }
 
-sl-button.control-save::part(base) {
-    background-color: var(--amber);
-    border-color: var(--amber);
-    color: #161616;
-}
-
-sl-button.control-save::part(base):hover {
-    background-color: #ffc53d;
-    border-color: #ffc53d;
-}
-
-sl-button.control-reorder[aria-pressed="true"]::part(base) {
+sl-button.control-edit[aria-pressed="true"]::part(base) {
     background-color: #fff;
     border-color: #fff;
     color: #111;

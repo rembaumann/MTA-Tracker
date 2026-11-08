@@ -5,15 +5,24 @@ await customElements.whenDefined("sl-button");
 (function () {
     var catalog = [];
     var selected = [];
-    var reorderMode = false;
+    var loaded = false;
+    var editMode = false;
     var drag = null;
+    var saveTimer = 0;
+    var statusTimer = 0;
+    var saving = false;
+    var saveQueued = false;
     var banner = document.getElementById("banner");
     var results = document.getElementById("results");
     var selectedList = document.getElementById("selected-list");
     var search = document.getElementById("search");
-    var reorderButton = document.getElementById("reorder");
+    var editButton = document.getElementById("edit");
+    var saveStatus = document.getElementById("save-status");
     var boardHint = document.getElementById("board-hint");
     var scrollPane = document.querySelector(".settings-scroll");
+    var displayInputs = ["trains-ahead", "per-page", "cycle", "zip"].map(function (id) {
+        return document.getElementById(id);
+    });
 
     function makeButton(options) {
         var button = document.createElement("sl-button");
@@ -83,26 +92,32 @@ await customElements.whenDefined("sl-button");
         return button;
     }
 
-    function updateReorderChrome() {
-        reorderButton.textContent = reorderMode ? "Done" : "Reorder";
-        reorderButton.variant = reorderMode ? "primary" : "neutral";
-        reorderButton.setAttribute("aria-pressed", reorderMode ? "true" : "false");
-        document.body.classList.toggle("is-reordering", reorderMode);
-        selectedList.classList.toggle("is-reordering", reorderMode);
-        boardHint.textContent = reorderMode
-            ? "Drag a station by the handle to change the board order."
+    function updateEditChrome() {
+        editButton.textContent = editMode ? "Done" : "Edit";
+        editButton.variant = editMode ? "primary" : "neutral";
+        editButton.setAttribute("aria-pressed", editMode ? "true" : "false");
+        editButton.disabled = !selected.length;
+        document.body.classList.toggle("is-editing", editMode);
+        selectedList.classList.toggle("is-editing", editMode);
+        boardHint.textContent = editMode
+            ? "Drag a station by the handle to change the board order, or tap the trash to remove it."
             : "These stations cycle in order. Tap an arrow or a line to turn it off. Grey lines stay off the board.";
     }
 
-    function setReorderMode(on) {
-        if (on && selected.length < 2) {
-            showBanner("Add at least two stations before reordering.", "");
-            return;
-        }
+    function setEditMode(on) {
         endDrag();
-        reorderMode = on;
-        updateReorderChrome();
+        editMode = on && selected.length > 0;
+        updateEditChrome();
         renderSelected();
+    }
+
+    function changed() {
+        if (editMode && !selected.length) {
+            editMode = false;
+        }
+        updateEditChrome();
+        renderSelected();
+        scheduleSave(0);
     }
 
     function renderSelected() {
@@ -118,13 +133,13 @@ await customElements.whenDefined("sl-button");
             var station = stationById(entry.id);
             var name = station ? station.name : entry.id;
             var card = document.createElement("article");
-            card.className = "station-card" + (reorderMode ? " is-reorder-card" : "");
+            card.className = "station-card" + (editMode ? " is-edit-card" : "");
             card.dataset.index = String(index);
 
             var body = document.createElement("div");
-            body.className = "card-body" + (reorderMode ? " is-reorder-body" : "");
+            body.className = "card-body";
 
-            if (reorderMode) {
+            if (editMode) {
                 var handle = makeButton({
                     className: "drag-handle",
                     label: "Drag to reorder " + name,
@@ -146,7 +161,7 @@ await customElements.whenDefined("sl-button");
             lines.className = "choice-row line-row";
             (station ? station.routes : []).forEach(function (route) {
                 var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
-                if (reorderMode) {
+                if (editMode) {
                     button.tabIndex = -1;
                     button.classList.add("is-static");
                 } else {
@@ -155,7 +170,7 @@ await customElements.whenDefined("sl-button");
                         if (!entry.routes.length) {
                             entry.routes.push(route.id);
                         }
-                        renderSelected();
+                        changed();
                     });
                 }
                 lines.appendChild(button);
@@ -164,10 +179,23 @@ await customElements.whenDefined("sl-button");
 
             body.appendChild(main);
 
-            if (!reorderMode) {
-                var actions = document.createElement("div");
-                actions.className = "card-actions";
+            var actions = document.createElement("div");
+            actions.className = "card-actions";
 
+            if (editMode) {
+                actions.appendChild(makeButton({
+                    className: "icon-button trash-button",
+                    label: "Remove " + name,
+                    icon: "trash3",
+                    circle: true,
+                    disabled: selected.length < 2,
+                    onClick: function () {
+                        selected.splice(index, 1);
+                        changed();
+                        renderResults();
+                    }
+                }));
+            } else {
                 var directionOptions = station ? station.directions : [
                     { id: "N", label: "Northbound" },
                     { id: "S", label: "Southbound" }
@@ -187,25 +215,13 @@ await customElements.whenDefined("sl-button");
                             if (!entry.directions.length) {
                                 entry.directions.push(direction.id);
                             }
-                            renderSelected();
+                            changed();
                         }
                     }));
                 });
-
-                actions.appendChild(makeButton({
-                    className: "icon-button trash-button",
-                    label: "Remove " + name,
-                    icon: "trash3",
-                    circle: true,
-                    onClick: function () {
-                        selected.splice(index, 1);
-                        renderSelected();
-                        renderResults();
-                    }
-                }));
-                body.appendChild(actions);
             }
 
+            body.appendChild(actions);
             card.dataset.stationId = entry.id;
             card.appendChild(body);
             selectedList.appendChild(card);
@@ -218,7 +234,7 @@ await customElements.whenDefined("sl-button");
 
     function bindHandle(handle, card) {
         handle.addEventListener("pointerdown", function (event) {
-            if (!reorderMode || event.button) {
+            if (!editMode || event.button) {
                 return;
             }
             event.preventDefault();
@@ -353,12 +369,14 @@ await customElements.whenDefined("sl-button");
                 to = from;
             }
         }
+        endDrag();
         if (to !== from) {
             var item = selected.splice(from, 1)[0];
             selected.splice(to, 0, item);
+            changed();
+        } else {
+            renderSelected();
         }
-        endDrag();
-        renderSelected();
     }
 
     function endDrag() {
@@ -396,7 +414,7 @@ await customElements.whenDefined("sl-button");
             directions: station.directions.map(function (direction) { return direction.id; }),
             routes: station.routes.map(function (route) { return route.id; })
         });
-        renderSelected();
+        changed();
         renderResults();
     }
 
@@ -505,11 +523,41 @@ await customElements.whenDefined("sl-button");
         };
     }
 
-    async function save() {
-        if (reorderMode) {
-            setReorderMode(false);
+    function setSaveStatus(state) {
+        window.clearTimeout(statusTimer);
+        saveStatus.className = "save-status" + (state ? " is-" + state : "");
+        saveStatus.textContent = { saving: "Saving…", saved: "Saved", error: "Not saved" }[state] || "";
+        if (state === "saved") {
+            statusTimer = window.setTimeout(function () { setSaveStatus(""); }, 2500);
         }
-        showBanner("Saving…", "");
+    }
+
+    function displayInputsValid() {
+        return displayInputs.every(function (input) { return input.checkValidity(); });
+    }
+
+    function scheduleSave(delay) {
+        if (!loaded) {
+            return;
+        }
+        window.clearTimeout(saveTimer);
+        saveTimer = window.setTimeout(save, delay);
+    }
+
+    async function save() {
+        saveTimer = 0;
+        if (saving) {
+            saveQueued = true;
+            return;
+        }
+        if (!displayInputsValid()) {
+            setSaveStatus("error");
+            var invalid = displayInputs.filter(function (input) { return !input.checkValidity(); })[0];
+            showBanner(invalid.closest("label").firstChild.textContent.trim() + ": " + invalid.validationMessage, "error");
+            return;
+        }
+        saving = true;
+        setSaveStatus("saving");
         try {
             var response = await fetch("/api/config", {
                 method: "POST",
@@ -517,14 +565,32 @@ await customElements.whenDefined("sl-button");
                 body: JSON.stringify(payload())
             });
             var data = await response.json();
-            if (!response.ok) {
+            if (response.ok) {
+                showBanner("", "");
+                setSaveStatus("saved");
+            } else {
                 showBanner((data.errors || ["Could not save."]).join(" "), "error");
-                return;
+                setSaveStatus("error");
             }
-            showBanner("Saved. The board picks this up within a few seconds.", "ok");
         } catch (err) {
             showBanner("Could not reach the app to save.", "error");
+            setSaveStatus("error");
         }
+        saving = false;
+        if (saveQueued) {
+            saveQueued = false;
+            save();
+        }
+    }
+
+    function flushSave() {
+        if ((!saveTimer && !saveQueued) || !displayInputsValid()) {
+            return;
+        }
+        window.clearTimeout(saveTimer);
+        saveTimer = 0;
+        saveQueued = false;
+        navigator.sendBeacon("/api/config", new Blob([JSON.stringify(payload())], { type: "application/json" }));
     }
 
     async function init() {
@@ -550,7 +616,8 @@ await customElements.whenDefined("sl-button");
             document.getElementById("per-page").value = config.trains_per_page;
             document.getElementById("cycle").value = config.cycle_seconds;
             document.getElementById("zip").value = config.zip_code;
-            updateReorderChrome();
+            loaded = true;
+            updateEditChrome();
             renderSelected();
             renderResults();
         } catch (err) {
@@ -559,9 +626,19 @@ await customElements.whenDefined("sl-button");
     }
 
     search.addEventListener("input", renderResults);
-    reorderButton.addEventListener("click", function () {
-        setReorderMode(!reorderMode);
+    editButton.addEventListener("click", function () {
+        setEditMode(!editMode);
     });
-    document.getElementById("save").addEventListener("click", save);
+    displayInputs.forEach(function (input) {
+        input.addEventListener("input", function () {
+            if (input.checkValidity()) {
+                scheduleSave(700);
+            }
+        });
+        input.addEventListener("change", function () {
+            scheduleSave(0);
+        });
+    });
+    window.addEventListener("pagehide", flushSave);
     init();
 })();

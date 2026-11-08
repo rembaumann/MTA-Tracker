@@ -217,7 +217,8 @@ class HttpTests(unittest.TestCase):
         self.assertIn(b"Add a station", settings.data)
         self.assertIn(b'settings-page', settings.data)
         self.assertIn(b'settings-scroll', settings.data)
-        self.assertIn(b'id="reorder"', settings.data)
+        self.assertIn(b'id="edit"', settings.data)
+        self.assertNotIn(b'id="save"', settings.data)
         self.assertIn(b"shoelace", settings.data)
         self.assertIn(b"<sl-button", settings.data)
 
