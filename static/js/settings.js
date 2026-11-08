@@ -121,8 +121,8 @@ await customElements.whenDefined("sl-button");
             card.className = "station-card" + (reorderMode ? " is-reorder-card" : "");
             card.dataset.index = String(index);
 
-            var head = document.createElement("div");
-            head.className = "card-head";
+            var body = document.createElement("div");
+            body.className = "card-body" + (reorderMode ? " is-reorder-body" : "");
 
             if (reorderMode) {
                 var handle = makeButton({
@@ -131,14 +131,16 @@ await customElements.whenDefined("sl-button");
                     icon: "grip-vertical"
                 });
                 bindHandle(handle, card);
-                head.appendChild(handle);
+                body.appendChild(handle);
             }
 
-            var titleWrap = document.createElement("div");
-            titleWrap.className = "card-title";
+            var main = document.createElement("div");
+            main.className = "card-main";
+
             var title = document.createElement("h3");
+            title.className = "station-name";
             title.textContent = name;
-            titleWrap.appendChild(title);
+            main.appendChild(title);
 
             if (reorderMode) {
                 var chips = document.createElement("div");
@@ -154,10 +156,25 @@ await customElements.whenDefined("sl-button");
                     dot.textContent = route.short;
                     chips.appendChild(dot);
                 });
-                titleWrap.appendChild(chips);
+                main.appendChild(chips);
+            } else {
+                var lines = document.createElement("div");
+                lines.className = "choice-row line-row";
+                (station ? station.routes : []).forEach(function (route) {
+                    var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
+                    button.addEventListener("click", function () {
+                        toggleList(entry.routes, route.id);
+                        if (!entry.routes.length) {
+                            entry.routes.push(route.id);
+                        }
+                        renderSelected();
+                    });
+                    lines.appendChild(button);
+                });
+                main.appendChild(lines);
             }
 
-            head.appendChild(titleWrap);
+            body.appendChild(main);
 
             if (!reorderMode) {
                 var actions = document.createElement("div");
@@ -198,29 +215,11 @@ await customElements.whenDefined("sl-button");
                         renderResults();
                     }
                 }));
-                head.appendChild(actions);
+                body.appendChild(actions);
             }
 
             card.dataset.stationId = entry.id;
-            card.appendChild(head);
-
-            if (!reorderMode) {
-                var lines = document.createElement("div");
-                lines.className = "choice-row line-row";
-                (station ? station.routes : []).forEach(function (route) {
-                    var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
-                    button.addEventListener("click", function () {
-                        toggleList(entry.routes, route.id);
-                        if (!entry.routes.length) {
-                            entry.routes.push(route.id);
-                        }
-                        renderSelected();
-                    });
-                    lines.appendChild(button);
-                });
-                card.appendChild(lines);
-            }
-
+            card.appendChild(body);
             selectedList.appendChild(card);
         });
     }

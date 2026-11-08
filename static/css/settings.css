@@ -133,7 +133,7 @@ body.settings-page {
     box-sizing: border-box;
 }
 
-.card-head,
+.card-body,
 .result-row {
     display: flex;
     align-items: center;
@@ -141,32 +141,38 @@ body.settings-page {
     gap: 12px;
 }
 
-.station-card.is-reorder-card .card-head {
+.card-body.is-reorder-body {
     justify-content: flex-start;
 }
 
-.card-title {
+.card-main {
     min-width: 0;
     flex: 1 1 auto;
 }
 
-.card-head h3,
+.station-name,
 .result-name {
-    font-size: 1.35rem;
+    font-size: clamp(1.7rem, 4.2vw, 2rem);
+    font-weight: 800;
+    line-height: 1.15;
     min-width: 0;
 }
 
 .card-lines {
-    margin-top: 6px;
+    margin-top: 8px;
+}
+
+.card-main .line-row {
+    margin-top: 10px;
 }
 
 .card-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    align-self: center;
     gap: 8px;
     flex: 0 0 auto;
-    margin-left: auto;
 }
 
 body.is-reordering .settings-scroll {
