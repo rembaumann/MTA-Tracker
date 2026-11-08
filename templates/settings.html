@@ -1,21 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="sl-theme-dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="mta-version" content="{{ version }}">
     <title>Settings · MTA Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/shoelace/themes/dark.css') }}?v={{ version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shoelace-mta.css') }}?v={{ version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v={{ version }}">
 </head>
-<body class="settings-page">
+<body class="settings-page sl-theme-dark">
     <div class="settings">
         <header class="settings-top">
-            <a class="control-button settings-back" href="/">‹ Board</a>
+            <sl-button class="settings-back touch-button" href="/" size="large" variant="neutral">
+                <sl-icon slot="prefix" name="chevron-left"></sl-icon>
+                Board
+            </sl-button>
             <h1>Stations</h1>
             <div class="settings-top-actions">
-                <button type="button" id="reorder" class="control-button control-reorder" aria-pressed="false">Reorder</button>
-                <button type="button" id="save" class="control-button control-save">Save</button>
+                <sl-button id="reorder" class="control-reorder touch-button" size="large" variant="neutral" aria-pressed="false">Reorder</sl-button>
+                <sl-button id="save" class="control-save touch-button" size="large" variant="primary">Save</sl-button>
             </div>
         </header>
 
@@ -61,6 +66,6 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/version.js') }}?v={{ version }}"></script>
-    <script src="{{ url_for('static', filename='js/settings.js') }}?v={{ version }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/settings.js') }}?v={{ version }}"></script>
 </body>
 </html>

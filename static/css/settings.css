@@ -29,11 +29,6 @@ body.settings-page {
     gap: 8px;
 }
 
-.control-reorder.is-on {
-    background: #fff;
-    color: #111;
-    border-color: #fff;
-}
 
 /* Dedicated scroll pane so a Pi touchscreen can pan without needing the scrollbar. */
 .settings-scroll {
@@ -67,12 +62,6 @@ body.settings-page {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-}
-
-.control-save {
-    background: var(--amber);
-    color: #161616;
-    border-color: var(--amber);
 }
 
 .banner {
@@ -176,36 +165,6 @@ body.settings-page {
     gap: 8px;
 }
 
-.drag-handle {
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    flex: 0 0 auto;
-    min-width: var(--touch);
-    min-height: var(--touch);
-    padding: 0 14px;
-    background: #242424;
-    border: 1px solid #3a3a3a;
-    cursor: grab;
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-.drag-handle span {
-    display: block;
-    width: 22px;
-    height: 3px;
-    background: #d0d0d0;
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-    background: #333;
-    border-color: var(--amber);
-}
-
 body.is-reordering .settings-scroll {
     touch-action: pan-y;
 }
@@ -217,37 +176,11 @@ body.is-reordering .results {
     pointer-events: none;
 }
 
-.icon-button,
-.add-button,
-.choice {
-    min-height: 52px;
-    min-width: 52px;
-    padding: 0 14px;
-    background: #242424;
-    color: #fff;
-    border: 1px solid #3a3a3a;
-    font-size: 1.15rem;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.icon-button:disabled,
-.add-button:disabled {
-    opacity: 0.4;
-    cursor: default;
-}
-
 .choice-row {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 12px;
-}
-
-.choice.is-on {
-    background: #fff;
-    color: #111;
-    border-color: #fff;
 }
 
 .line-row .route-bullet {
@@ -354,10 +287,4 @@ body.is-reordering .results {
         grid-column: 2;
     }
 
-    .control-reorder,
-    .control-save {
-        min-width: 0;
-        padding: 0 14px;
-        font-size: 1.15rem;
-    }
 }

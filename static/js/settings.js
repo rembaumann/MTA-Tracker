@@ -1,3 +1,7 @@
+import "./shoelace-setup.js";
+
+await customElements.whenDefined("sl-button");
+
 (function () {
     var catalog = [];
     var selected = [];
@@ -10,6 +14,43 @@
     var reorderButton = document.getElementById("reorder");
     var boardHint = document.getElementById("board-hint");
     var scrollPane = document.querySelector(".settings-scroll");
+
+    function makeButton(options) {
+        var button = document.createElement("sl-button");
+        button.size = options.size || "large";
+        button.variant = options.variant || "neutral";
+        if (options.outline) {
+            button.outline = true;
+        }
+        if (options.circle) {
+            button.circle = true;
+        }
+        if (options.className) {
+            button.className = options.className;
+        }
+        if (options.label) {
+            button.setAttribute("aria-label", options.label);
+        }
+        if (options.pressed != null) {
+            button.setAttribute("aria-pressed", options.pressed ? "true" : "false");
+        }
+        button.disabled = !!options.disabled;
+        if (options.icon) {
+            var icon = document.createElement("sl-icon");
+            icon.name = options.icon;
+            if (options.iconSlot) {
+                icon.slot = options.iconSlot;
+            }
+            button.appendChild(icon);
+        }
+        if (options.text) {
+            button.appendChild(document.createTextNode(options.text));
+        }
+        if (options.onClick) {
+            button.addEventListener("click", options.onClick);
+        }
+        return button;
+    }
 
     function showBanner(text, kind) {
         banner.hidden = !text;
@@ -44,8 +85,8 @@
 
     function updateReorderChrome() {
         reorderButton.textContent = reorderMode ? "Done" : "Reorder";
+        reorderButton.variant = reorderMode ? "primary" : "neutral";
         reorderButton.setAttribute("aria-pressed", reorderMode ? "true" : "false");
-        reorderButton.classList.toggle("is-on", reorderMode);
         document.body.classList.toggle("is-reordering", reorderMode);
         selectedList.classList.toggle("is-reordering", reorderMode);
         boardHint.textContent = reorderMode
@@ -84,11 +125,11 @@
             head.className = "card-head";
 
             if (reorderMode) {
-                var handle = document.createElement("button");
-                handle.type = "button";
-                handle.className = "drag-handle";
-                handle.setAttribute("aria-label", "Drag to reorder " + name);
-                handle.innerHTML = "<span aria-hidden=\"true\"></span><span aria-hidden=\"true\"></span><span aria-hidden=\"true\"></span>";
+                var handle = makeButton({
+                    className: "drag-handle",
+                    label: "Drag to reorder " + name,
+                    icon: "grip-vertical"
+                });
                 bindHandle(handle, card);
                 head.appendChild(handle);
             }
@@ -121,11 +162,17 @@
             if (!reorderMode) {
                 var actions = document.createElement("div");
                 actions.className = "card-actions";
-                actions.appendChild(iconButton("Remove " + name, "✕", function () {
-                    selected.splice(index, 1);
-                    renderSelected();
-                    renderResults();
-                }, false));
+                actions.appendChild(makeButton({
+                    className: "icon-button",
+                    label: "Remove " + name,
+                    icon: "x-lg",
+                    circle: true,
+                    onClick: function () {
+                        selected.splice(index, 1);
+                        renderSelected();
+                        renderResults();
+                    }
+                }));
                 head.appendChild(actions);
             }
 
@@ -140,16 +187,19 @@
                     { id: "S", label: "Southbound" }
                 ];
                 directionOptions.forEach(function (direction) {
-                    var button = document.createElement("button");
-                    button.type = "button";
-                    button.className = "choice" + (entry.directions.indexOf(direction.id) >= 0 ? " is-on" : "");
-                    button.textContent = direction.label;
-                    button.addEventListener("click", function () {
-                        toggleList(entry.directions, direction.id);
-                        if (!entry.directions.length) {
-                            entry.directions.push(direction.id);
+                    var on = entry.directions.indexOf(direction.id) >= 0;
+                    var button = makeButton({
+                        className: "choice" + (on ? " is-on" : ""),
+                        text: direction.label,
+                        outline: !on,
+                        pressed: on,
+                        onClick: function () {
+                            toggleList(entry.directions, direction.id);
+                            if (!entry.directions.length) {
+                                entry.directions.push(direction.id);
+                            }
+                            renderSelected();
                         }
-                        renderSelected();
                     });
                     directions.appendChild(button);
                 });
@@ -341,17 +391,6 @@
         drag = null;
     }
 
-    function iconButton(label, text, onClick, disabled) {
-        var button = document.createElement("button");
-        button.type = "button";
-        button.className = "icon-button";
-        button.textContent = text;
-        button.setAttribute("aria-label", label);
-        button.disabled = disabled;
-        button.addEventListener("click", onClick);
-        return button;
-    }
-
     function toggleList(list, value) {
         var index = list.indexOf(value);
         if (index >= 0) {
@@ -446,13 +485,13 @@
             info.appendChild(lines);
             row.appendChild(info);
 
-            var button = document.createElement("button");
-            button.type = "button";
-            button.className = "add-button";
-            button.textContent = already ? "Added" : "Add";
-            button.disabled = already;
-            button.addEventListener("click", function () { addStation(station); });
-            row.appendChild(button);
+            row.appendChild(makeButton({
+                className: "add-button",
+                text: already ? "Added" : "Add",
+                variant: already ? "neutral" : "primary",
+                disabled: already,
+                onClick: function () { addStation(station); }
+            }));
             results.appendChild(row);
         });
     }
