@@ -29,10 +29,6 @@ body.settings-page {
     gap: 12px;
 }
 
-.control-edit[hidden] {
-    display: none;
-}
-
 .save-status {
     color: var(--muted);
     font-size: 1rem;
@@ -132,6 +128,21 @@ body.settings-page {
 
 .panel {
     padding: 16px;
+}
+
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.panel-head-text {
+    min-width: 0;
+}
+
+.control-edit {
+    flex: 0 0 auto;
 }
 
 .panel-head h2,

@@ -123,7 +123,6 @@ await customElements.whenDefined("sl-button");
         if (name !== "stations" && editMode) {
             setEditMode(false);
         }
-        editButton.hidden = name !== "stations";
         history.replaceState(null, "", name === "stations" ? location.pathname : "#" + name);
     }
 
