@@ -17,16 +17,21 @@
                 <sl-icon slot="prefix" name="chevron-left"></sl-icon>
                 Board
             </sl-button>
-            <h1>Stations</h1>
+            <h1>Settings</h1>
             <div class="settings-top-actions">
                 <span id="save-status" class="save-status" role="status" aria-live="polite"></span>
                 <sl-button id="edit" class="control-edit touch-button" size="large" variant="neutral" aria-pressed="false">Edit</sl-button>
             </div>
         </header>
 
-        <div class="settings-scroll">
-            <p id="banner" class="banner" hidden></p>
+        <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
+            <button type="button" class="settings-tab" role="tab" id="tab-stations" data-tab="stations" aria-controls="panel-stations" aria-selected="true">Stations</button>
+            <button type="button" class="settings-tab" role="tab" id="tab-settings" data-tab="settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1">Settings</button>
+        </nav>
 
+        <p id="banner" class="banner" hidden></p>
+
+        <div class="settings-scroll" id="panel-stations" role="tabpanel" aria-labelledby="tab-stations">
             <section class="panel">
                 <div class="panel-head">
                     <h2>On the board</h2>
@@ -40,7 +45,9 @@
                 <input id="search" class="search" type="search" placeholder="Search by name or line, such as Union Sq or Q" autocomplete="off" enterkeyhint="search">
                 <div id="results" class="results"></div>
             </section>
+        </div>
 
+        <div class="settings-scroll" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
             <section class="panel display-options">
                 <h2>Display</h2>
                 <div class="option-grid">

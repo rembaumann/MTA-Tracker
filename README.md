@@ -40,6 +40,8 @@ Use the gear on the board, or open `/settings`.
 3. Turn directions (the ↑ and ↓ arrows) and line bullets on or off.
 4. Tap Edit to drag stations into a new order or remove one with the trash, then tap Done.
 
+The Settings tab holds the display options: trains ahead, trains per page, seconds on each page, and the weather ZIP.
+
 Every change saves automatically. The board picks it up on the next refresh.
 
 The same choices live in `config.json`. `config.example.json` is the default used when `config.json` does not exist yet, so a fresh clone still shows trains. `install-pi.sh` copies the example to `config.json` once and will not overwrite it later.

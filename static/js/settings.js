@@ -19,7 +19,8 @@ await customElements.whenDefined("sl-button");
     var editButton = document.getElementById("edit");
     var saveStatus = document.getElementById("save-status");
     var boardHint = document.getElementById("board-hint");
-    var scrollPane = document.querySelector(".settings-scroll");
+    var scrollPane = document.getElementById("panel-stations");
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".settings-tab"));
     var displayInputs = ["trains-ahead", "per-page", "cycle", "zip"].map(function (id) {
         return document.getElementById(id);
     });
@@ -109,6 +110,20 @@ await customElements.whenDefined("sl-button");
         editMode = on && selected.length > 0;
         updateEditChrome();
         renderSelected();
+    }
+
+    function showTab(name) {
+        tabs.forEach(function (tab) {
+            var active = tab.dataset.tab === name;
+            tab.setAttribute("aria-selected", active ? "true" : "false");
+            tab.tabIndex = active ? 0 : -1;
+            document.getElementById(tab.getAttribute("aria-controls")).hidden = !active;
+        });
+        if (name !== "stations" && editMode) {
+            setEditMode(false);
+        }
+        editButton.hidden = name !== "stations";
+        history.replaceState(null, "", name === "stations" ? location.pathname : "#" + name);
     }
 
     function changed() {
@@ -624,6 +639,22 @@ await customElements.whenDefined("sl-button");
             showBanner("Could not load stations. Is the app running?", "error");
         }
     }
+
+    tabs.forEach(function (tab, index) {
+        tab.addEventListener("click", function () {
+            showTab(tab.dataset.tab);
+        });
+        tab.addEventListener("keydown", function (event) {
+            var step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+            if (!step) {
+                return;
+            }
+            var next = tabs[(index + step + tabs.length) % tabs.length];
+            showTab(next.dataset.tab);
+            next.focus();
+        });
+    });
+    showTab(location.hash === "#settings" ? "settings" : "stations");
 
     search.addEventListener("input", renderResults);
     editButton.addEventListener("click", function () {
