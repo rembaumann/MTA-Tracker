@@ -142,8 +142,20 @@ sl-button.icon-button sl-icon {
     font-size: 1.45rem;
 }
 
-sl-button.trash-button::part(base) {
+sl-button.trash-button::part(base),
+sl-button.trash-button::part(base):hover,
+sl-button.trash-button::part(base):focus {
+    background: none;
+    border-color: transparent;
     color: #ffc0c0;
+}
+
+sl-button.trash-button::part(base):active {
+    color: #ff8080;
+}
+
+sl-button.trash-button sl-icon {
+    font-size: 1.7rem;
 }
 
 sl-button.direction-button:not(.is-on)::part(base) {
