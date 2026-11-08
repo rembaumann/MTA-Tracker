@@ -267,6 +267,36 @@ body.is-editing .results {
     font-family: inherit;
 }
 
+.add-panel {
+    padding-bottom: 0;
+}
+
+.search-wrap {
+    position: relative;
+}
+
+.search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin-top: 0;
+    padding: 10px;
+    gap: 10px;
+    background: #0b0b0b;
+    border: 1px solid #444;
+    border-radius: 10px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
+
+.search-results[hidden] {
+    display: none;
+}
+
 .search:focus,
 .option-grid input:focus {
     outline: 2px solid var(--amber);

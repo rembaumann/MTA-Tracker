@@ -32,18 +32,20 @@
         <p id="banner" class="banner" hidden></p>
 
         <div class="settings-scroll" id="panel-stations" role="tabpanel" aria-labelledby="tab-stations">
+            <section class="panel add-panel">
+                <label class="search-label" for="search">Add a station</label>
+                <div class="search-wrap">
+                    <input id="search" class="search" type="search" placeholder="Search by name or line, such as Union Sq or Q" autocomplete="off" enterkeyhint="search" aria-controls="results">
+                    <div id="results" class="results search-results" role="region" aria-label="Matching stations" hidden></div>
+                </div>
+            </section>
+
             <section class="panel">
                 <div class="panel-head">
                     <h2>On the board</h2>
                     <p id="board-hint">These stations cycle in order. Tap an arrow or a line to turn it off. Grey lines stay off the board.</p>
                 </div>
                 <div id="selected-list" class="selected-list"></div>
-            </section>
-
-            <section class="panel">
-                <label class="search-label" for="search">Add a station</label>
-                <input id="search" class="search" type="search" placeholder="Search by name or line, such as Union Sq or Q" autocomplete="off" enterkeyhint="search">
-                <div id="results" class="results"></div>
             </section>
         </div>
 

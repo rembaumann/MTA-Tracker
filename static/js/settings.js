@@ -107,6 +107,7 @@ await customElements.whenDefined("sl-button");
 
     function setEditMode(on) {
         endDrag();
+        closeResults();
         editMode = on && selected.length > 0;
         updateEditChrome();
         renderSelected();
@@ -430,7 +431,23 @@ await customElements.whenDefined("sl-button");
             routes: station.routes.map(function (route) { return route.id; })
         });
         changed();
-        renderResults();
+        search.value = "";
+        closeResults();
+        search.blur();
+        var added = selectedList.lastElementChild;
+        if (added) {
+            added.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+    }
+
+    function closeResults() {
+        results.hidden = true;
+        results.innerHTML = "";
+    }
+
+    function fitResults() {
+        var room = scrollPane.getBoundingClientRect().bottom - results.getBoundingClientRect().top - 12;
+        results.style.maxHeight = Math.max(room, 200) + "px";
     }
 
     function routeExact(station, query) {
@@ -451,14 +468,14 @@ await customElements.whenDefined("sl-button");
 
     function renderResults() {
         var query = search.value.trim().toLowerCase();
-        results.innerHTML = "";
-        if (!query) {
-            var hint = document.createElement("p");
-            hint.className = "hint";
-            hint.textContent = "Type a station name, or a line such as L, 6, or Q.";
-            results.appendChild(hint);
+        if (!query || editMode) {
+            closeResults();
             return;
         }
+        results.innerHTML = "";
+        results.hidden = false;
+        results.scrollTop = 0;
+        fitResults();
         var lineQuery = query.length <= 3 && !/^\d{2,}$/.test(query) && catalog.some(function (station) {
             return routeExact(station, query);
         });
@@ -657,6 +674,32 @@ await customElements.whenDefined("sl-button");
     showTab(location.hash === "#settings" ? "settings" : "stations");
 
     search.addEventListener("input", renderResults);
+    search.addEventListener("focus", renderResults);
+    search.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            search.value = "";
+            closeResults();
+        }
+    });
+    var dismissing = false;
+    document.addEventListener("pointerdown", function (event) {
+        dismissing = !results.hidden && !event.target.closest(".search-wrap");
+        if (dismissing) {
+            closeResults();
+        }
+    });
+    document.addEventListener("click", function (event) {
+        if (dismissing) {
+            dismissing = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }, true);
+    window.addEventListener("resize", function () {
+        if (!results.hidden) {
+            fitResults();
+        }
+    });
     editButton.addEventListener("click", function () {
         setEditMode(!editMode);
     });
