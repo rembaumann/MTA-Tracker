@@ -53,7 +53,6 @@ sl-button {
 sl-button.touch-button::part(base),
 sl-button.choice::part(base),
 sl-button.add-button::part(base),
-sl-button.drag-handle::part(base),
 sl-button.icon-button::part(base) {
     min-height: var(--touch);
     font-weight: 700;
@@ -74,23 +73,46 @@ sl-button.direction-button.is-on::part(base) {
 
 sl-button.drag-handle {
     flex: 0 0 auto;
+    align-self: stretch;
     cursor: grab;
     touch-action: none;
 }
 
 sl-button.drag-handle::part(base) {
-    min-width: var(--touch);
-    padding-inline: 0;
+    width: 48px;
+    height: 100%;
+    min-height: var(--touch);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    background: none;
+    border-color: transparent;
+    color: #b5b5b5;
     cursor: grab;
 }
 
+sl-button.drag-handle::part(base):hover,
+sl-button.drag-handle::part(base):focus {
+    background: none;
+    border-color: transparent;
+    color: #fff;
+}
+
+sl-button.drag-handle::part(label) {
+    padding: 0;
+    display: flex;
+}
+
 sl-button.drag-handle sl-icon {
-    font-size: 1.6rem;
+    display: block;
+    font-size: 2.2rem;
 }
 
 sl-button.drag-handle:active::part(base) {
     cursor: grabbing;
-    border-color: var(--amber);
+    color: var(--amber);
 }
 
 sl-button.icon-button::part(base) {
