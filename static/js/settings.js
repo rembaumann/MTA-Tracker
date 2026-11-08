@@ -102,7 +102,7 @@ await customElements.whenDefined("sl-button");
         selectedList.classList.toggle("is-editing", editMode);
         boardHint.textContent = editMode
             ? "Drag a station by the handle to change the board order, or tap the trash to remove it."
-            : "These stations cycle in order. Tap an arrow or a line to turn it off. Grey lines stay off the board.";
+            : "These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.";
     }
 
     function setEditMode(on) {
@@ -217,12 +217,9 @@ await customElements.whenDefined("sl-button");
                 ];
                 directionOptions.forEach(function (direction) {
                     var on = entry.directions.indexOf(direction.id) >= 0;
-                    var arrow = direction.id === "S" ? "arrow-down" : "arrow-up";
                     actions.appendChild(makeButton({
-                        className: "icon-button direction-button" + (on ? " is-on" : ""),
-                        label: direction.label,
-                        icon: arrow,
-                        circle: true,
+                        className: "direction-button" + (on ? " is-on" : ""),
+                        text: direction.label,
                         outline: !on,
                         pressed: on,
                         onClick: function () {

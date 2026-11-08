@@ -158,8 +158,24 @@ sl-button.trash-button sl-icon {
     font-size: 1.7rem;
 }
 
-sl-button.direction-button:not(.is-on)::part(base) {
-    color: #cfcfcf;
+sl-button.direction-button::part(base) {
+    min-width: 8.5rem;
+    min-height: var(--touch);
+    padding-inline: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+sl-button.direction-button::part(label) {
+    padding: 0;
+}
+
+sl-button.direction-button:not(.is-on)::part(base),
+sl-button.direction-button:not(.is-on)::part(base):hover,
+sl-button.direction-button:not(.is-on)::part(base):focus {
+    background: none;
+    border-color: #4a4a4a;
+    color: #8a8a8a;
 }
 
 .settings-top-actions sl-button,

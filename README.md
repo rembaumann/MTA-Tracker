@@ -37,7 +37,7 @@ Use the gear on the board, or open `/settings`.
 
 1. Search by station name, or by a line such as `Q` or `6`.
 2. Add a station. It starts with both directions and every line that stops there.
-3. Turn directions (the ↑ and ↓ arrows) and line bullets on or off.
+3. Turn directions (such as Uptown and Downtown, or Manhattan and Brooklyn on the L) and line bullets on or off.
 4. Tap Edit to drag stations into a new order or remove one with the trash, then tap Done.
 
 The Settings tab holds the display options: trains ahead, trains per page, seconds on each page, and the weather ZIP.
