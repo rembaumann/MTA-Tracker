@@ -217,6 +217,8 @@ class HttpTests(unittest.TestCase):
         self.assertIn(b"Add a station", settings.data)
         self.assertIn(b'settings-page', settings.data)
         self.assertIn(b'settings-scroll', settings.data)
+        self.assertIn(b'settings-tablet.png', settings.data)
+        self.assertEqual(self.client.get("/static/img/settings-tablet.png").status_code, 200)
         self.assertIn(b'id="tab-stations"', settings.data)
         self.assertIn(b'id="tab-settings"', settings.data)
         self.assertIn(b'id="panel-settings"', settings.data)

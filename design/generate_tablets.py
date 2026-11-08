@@ -9,6 +9,7 @@ Contracts frame from the Broadway tablet.
 Recolor the field, the letters, and the bands for another station.
 
 Needs Pillow. Run: python3 design/generate_tablets.py
+The settings page title: python3 design/generate_tablets.py settings
 """
 
 import os
@@ -776,9 +777,21 @@ def write_original():
         print(station_id, text, canvas.bounds())
 
 
+def write_settings():
+    """Settings page title, in the common 1904 blue-and-buff colors."""
+    folder = os.path.join(os.path.dirname(OUT_DIR), "static", "img")
+    os.makedirs(folder, exist_ok=True)
+    canvas = build_original("SETTINGS", "blue", "buff", "", "cream")
+    png_for(canvas, os.path.join(folder, "settings-tablet.png"))
+    print("SETTINGS", canvas.bounds())
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "original":
         write_original()
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "settings":
+        write_settings()
         return
     bmt = build_bmt()
     irt = build_irt()

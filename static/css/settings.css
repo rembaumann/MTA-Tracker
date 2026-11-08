@@ -104,8 +104,17 @@ body.settings-page {
 }
 
 .settings-top h1 {
-    text-align: center;
-    font-size: clamp(1.4rem, 3vw, 2rem);
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+}
+
+.settings-tablet {
+    display: block;
+    height: 64px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .settings-back {
@@ -381,7 +390,10 @@ body.is-editing .results {
     .settings-top h1 {
         grid-column: 1 / -1;
         order: -1;
-        text-align: left;
+    }
+
+    .settings-tablet {
+        height: 52px;
     }
 
     .settings-top-actions {
