@@ -91,7 +91,7 @@ await customElements.whenDefined("sl-button");
         selectedList.classList.toggle("is-reordering", reorderMode);
         boardHint.textContent = reorderMode
             ? "Drag a station by the handle to change the board order."
-            : "These stations cycle in order. Tap a direction or a line to turn it off. Grey lines stay off the board.";
+            : "These stations cycle in order. Tap an arrow or a line to turn it off. Grey lines stay off the board.";
     }
 
     function setReorderMode(on) {
@@ -162,10 +162,35 @@ await customElements.whenDefined("sl-button");
             if (!reorderMode) {
                 var actions = document.createElement("div");
                 actions.className = "card-actions";
+
+                var directionOptions = station ? station.directions : [
+                    { id: "N", label: "Northbound" },
+                    { id: "S", label: "Southbound" }
+                ];
+                directionOptions.forEach(function (direction) {
+                    var on = entry.directions.indexOf(direction.id) >= 0;
+                    var arrow = direction.id === "S" ? "arrow-down" : "arrow-up";
+                    actions.appendChild(makeButton({
+                        className: "icon-button direction-button" + (on ? " is-on" : ""),
+                        label: direction.label,
+                        icon: arrow,
+                        circle: true,
+                        outline: !on,
+                        pressed: on,
+                        onClick: function () {
+                            toggleList(entry.directions, direction.id);
+                            if (!entry.directions.length) {
+                                entry.directions.push(direction.id);
+                            }
+                            renderSelected();
+                        }
+                    }));
+                });
+
                 actions.appendChild(makeButton({
-                    className: "icon-button",
+                    className: "icon-button trash-button",
                     label: "Remove " + name,
-                    icon: "x-lg",
+                    icon: "trash3",
                     circle: true,
                     onClick: function () {
                         selected.splice(index, 1);
@@ -180,31 +205,6 @@ await customElements.whenDefined("sl-button");
             card.appendChild(head);
 
             if (!reorderMode) {
-                var directions = document.createElement("div");
-                directions.className = "choice-row";
-                var directionOptions = station ? station.directions : [
-                    { id: "N", label: "Northbound" },
-                    { id: "S", label: "Southbound" }
-                ];
-                directionOptions.forEach(function (direction) {
-                    var on = entry.directions.indexOf(direction.id) >= 0;
-                    var button = makeButton({
-                        className: "choice" + (on ? " is-on" : ""),
-                        text: direction.label,
-                        outline: !on,
-                        pressed: on,
-                        onClick: function () {
-                            toggleList(entry.directions, direction.id);
-                            if (!entry.directions.length) {
-                                entry.directions.push(direction.id);
-                            }
-                            renderSelected();
-                        }
-                    });
-                    directions.appendChild(button);
-                });
-                card.appendChild(directions);
-
                 var lines = document.createElement("div");
                 lines.className = "choice-row line-row";
                 (station ? station.routes : []).forEach(function (route) {
