@@ -1,0 +1,109 @@
+/* MTA kiosk overrides on top of Shoelace dark theme. */
+:root,
+:host,
+.sl-theme-dark {
+    --sl-font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --sl-border-radius-medium: 8px;
+    --sl-border-radius-large: 10px;
+    --sl-input-height-large: 64px;
+    --sl-font-size-large: 1.2rem;
+    --sl-font-weight-semibold: 700;
+    --sl-spacing-medium: 1rem;
+
+    --sl-color-primary-50: #fff8e5;
+    --sl-color-primary-100: #ffefc2;
+    --sl-color-primary-200: #ffe08a;
+    --sl-color-primary-300: #ffd056;
+    --sl-color-primary-400: #f7c133;
+    --sl-color-primary-500: #f0b323;
+    --sl-color-primary-600: #d9a01c;
+    --sl-color-primary-700: #b88414;
+    --sl-color-primary-800: #8f650f;
+    --sl-color-primary-900: #66480b;
+    --sl-color-primary-950: #3d2b07;
+
+    --sl-color-neutral-0: #fff;
+    --sl-color-neutral-50: #f2f2f2;
+    --sl-color-neutral-100: #e6e6e6;
+    --sl-color-neutral-200: #cccccc;
+    --sl-color-neutral-300: #a6a6a6;
+    --sl-color-neutral-400: #808080;
+    --sl-color-neutral-500: #666666;
+    --sl-color-neutral-600: #4d4d4d;
+    --sl-color-neutral-700: #333333;
+    --sl-color-neutral-800: #242424;
+    --sl-color-neutral-900: #1a1a1a;
+    --sl-color-neutral-950: #111111;
+    --sl-color-neutral-1000: #000000;
+}
+
+sl-button:not(:defined) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch);
+    min-width: 120px;
+    visibility: hidden;
+}
+
+sl-button {
+    font-family: inherit;
+}
+
+sl-button.touch-button::part(base),
+sl-button.choice::part(base),
+sl-button.add-button::part(base),
+sl-button.drag-handle::part(base),
+sl-button.icon-button::part(base) {
+    min-height: var(--touch);
+    font-weight: 700;
+}
+
+sl-button.control-save::part(base) {
+    background-color: var(--amber);
+    border-color: var(--amber);
+    color: #161616;
+}
+
+sl-button.control-save::part(base):hover {
+    background-color: #ffc53d;
+    border-color: #ffc53d;
+}
+
+sl-button.control-reorder[aria-pressed="true"]::part(base) {
+    background-color: #fff;
+    border-color: #fff;
+    color: #111;
+}
+
+sl-button.choice.is-on::part(base) {
+    background-color: #fff;
+    border-color: #fff;
+    color: #111;
+}
+
+sl-button.drag-handle {
+    flex: 0 0 auto;
+    cursor: grab;
+    touch-action: none;
+}
+
+sl-button.drag-handle::part(base) {
+    min-width: var(--touch);
+    padding-inline: 0;
+    cursor: grab;
+}
+
+sl-button.drag-handle:active::part(base) {
+    cursor: grabbing;
+    border-color: var(--amber);
+}
+
+sl-button.icon-button::part(base) {
+    min-width: var(--touch);
+}
+
+.settings-top-actions sl-button,
+.settings-top .settings-back {
+    min-width: 0;
+}
