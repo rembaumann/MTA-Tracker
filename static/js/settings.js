@@ -142,26 +142,14 @@ await customElements.whenDefined("sl-button");
             title.textContent = name;
             main.appendChild(title);
 
-            if (reorderMode) {
-                var chips = document.createElement("div");
-                chips.className = "result-lines card-lines";
-                (station ? station.routes : []).forEach(function (route) {
-                    if (entry.routes.indexOf(route.id) < 0) {
-                        return;
-                    }
-                    var dot = document.createElement("span");
-                    dot.className = "mini-bullet" + (route.express ? " express" : "");
-                    dot.style.background = route.color;
-                    dot.style.color = route.text_color;
-                    dot.textContent = route.short;
-                    chips.appendChild(dot);
-                });
-                main.appendChild(chips);
-            } else {
-                var lines = document.createElement("div");
-                lines.className = "choice-row line-row";
-                (station ? station.routes : []).forEach(function (route) {
-                    var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
+            var lines = document.createElement("div");
+            lines.className = "choice-row line-row";
+            (station ? station.routes : []).forEach(function (route) {
+                var button = bullet(route, entry.routes.indexOf(route.id) >= 0);
+                if (reorderMode) {
+                    button.tabIndex = -1;
+                    button.classList.add("is-static");
+                } else {
                     button.addEventListener("click", function () {
                         toggleList(entry.routes, route.id);
                         if (!entry.routes.length) {
@@ -169,10 +157,10 @@ await customElements.whenDefined("sl-button");
                         }
                         renderSelected();
                     });
-                    lines.appendChild(button);
-                });
-                main.appendChild(lines);
-            }
+                }
+                lines.appendChild(button);
+            });
+            main.appendChild(lines);
 
             body.appendChild(main);
 

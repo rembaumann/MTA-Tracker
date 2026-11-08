@@ -113,7 +113,6 @@ body.settings-page {
 }
 
 .station-card.is-reorder-card {
-    padding: 8px 12px;
     touch-action: none;
 }
 
@@ -158,10 +157,6 @@ body.settings-page {
     min-width: 0;
 }
 
-.card-lines {
-    margin-top: 8px;
-}
-
 .card-main .line-row {
     margin-top: 10px;
 }
@@ -195,6 +190,10 @@ body.is-reordering .results {
 
 .line-row .route-bullet {
     cursor: pointer;
+}
+
+.line-row .route-bullet.is-static {
+    pointer-events: none;
 }
 
 .line-row .route-bullet.is-dim {

@@ -95,6 +95,10 @@ sl-button.drag-handle::part(base) {
     cursor: grab;
 }
 
+sl-button.drag-handle sl-icon {
+    font-size: 1.6rem;
+}
+
 sl-button.drag-handle:active::part(base) {
     cursor: grabbing;
     border-color: var(--amber);
